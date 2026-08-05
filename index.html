@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แดชบอร์ด - ร้านกาแฟอเมซอน สาขาวัดโพธิ์</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter','Noto Sans Thai', sans-serif; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
+  ::-webkit-scrollbar-thumb:hover { background: #a5b4fc; }
+  /* Liquid Glass, turned up further: heavily translucent, strong blur, bright glossy sheen. */
+  .card {
+    background: rgba(255,255,255,0.42);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.9);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,1), inset 0 -16px 26px -18px rgba(255,255,255,0.7), 0 22px 46px -22px rgba(99,102,241,0.28), 0 6px 14px -6px rgba(59,130,246,0.12);
+  }
+  .kpi-card {
+    backdrop-filter: blur(26px) saturate(190%);
+    -webkit-backdrop-filter: blur(26px) saturate(190%);
+  }
+  .kpi-card::after {
+    content:''; position:absolute; inset:0; border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 50%);
+    pointer-events:none;
+  }
+  .kpi-blue { background: linear-gradient(160deg, rgba(59,130,246,0.34) 0%, rgba(59,130,246,0.08) 100%); }
+  .kpi-rose { background: linear-gradient(160deg, rgba(244,63,94,0.32) 0%, rgba(244,63,94,0.08) 100%); }
+  .kpi-emerald { background: linear-gradient(160deg, rgba(16,185,129,0.32) 0%, rgba(16,185,129,0.08) 100%); }
+  .kpi-violet { background: linear-gradient(160deg, rgba(139,92,246,0.32) 0%, rgba(139,92,246,0.08) 100%); }
+  .brand-icon {
+    box-shadow: 0 8px 16px -4px rgba(79,70,229,0.45), 0 2px 4px rgba(79,70,229,0.25), inset 0 1px 0 rgba(255,255,255,0.6);
+  }
+  .brand-icon::before {
+    content:''; position:absolute; inset:0;
+    background: linear-gradient(140deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 45%);
+    pointer-events:none;
+  }
+  .header-glass {
+    background: linear-gradient(180deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.5) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border-bottom: 1px solid rgba(255,255,255,0.7);
+    box-shadow: 0 8px 24px -12px rgba(30,64,175,0.18);
+  }
+  .select-pill {
+    background: rgba(255,255,255,0.75);
+    border: 1px solid rgba(191,219,254,0.8);
+    box-shadow: 0 1px 3px rgba(30,64,175,0.08), inset 0 1px 0 rgba(255,255,255,0.8);
+    transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  }
+  .select-pill:hover {
+    border-color: rgba(96,165,250,0.9);
+    box-shadow: 0 4px 10px rgba(30,64,175,0.15), inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+</style>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 via-blue-50 to-white min-h-screen text-slate-800">
+
+<div class="flex">
+
+  <!-- Sidebar -->
+  <aside class="fixed top-0 left-0 h-screen w-64 bg-white/50 backdrop-blur-xl border-r border-white/60 flex-col z-20 hidden md:flex">
+    <div class="h-20 flex items-center gap-3 px-6">
+      <div class="brand-icon w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-500 to-violet-600 flex items-center justify-center text-white shrink-0 relative overflow-hidden ring-1 ring-white/70">
+        <i class="fa-solid fa-mug-hot text-xl relative z-10 drop-shadow-sm"></i>
+      </div>
+      <div class="leading-tight">
+        <p class="text-lg font-extrabold tracking-tight text-slate-900">ร้านกาแฟอเมซอน</p>
+        <p class="text-[11px] font-medium text-slate-400 tracking-wide">Amazon Coffee Franchise</p>
+      </div>
+    </div>
+    <nav class="flex-1 px-4 py-2 space-y-1">
+      <button title="ขณะนี้มีข้อมูลเพียงสาขาเดียว (วัดโพธิ์)" class="w-full flex items-center justify-between gap-3 px-4 py-3 mb-2 rounded-xl bg-blue-50 text-blue-700 font-semibold text-base">
+        <span class="flex items-center gap-3"><i class="fa-solid fa-store w-5 text-center"></i> สาขาวัดโพธิ์</span>
+        <i class="fa-solid fa-chevron-down text-xs"></i>
+      </button>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white shadow-sm text-slate-900 font-medium text-base">
+        <i class="fa-solid fa-grip w-5 text-center text-blue-600"></i> แดชบอร์ด
+      </a>
+    </nav>
+    <div class="px-6 pb-6">
+      <p class="text-xs text-slate-600 leading-relaxed">ข้อมูล 18 เดือน (พ.ย. 2567 - พ.ค. 2569)</p>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="flex-1 md:ml-64 min-h-screen">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-10 header-glass px-6 lg:px-10 py-5 flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <p class="text-[11px] font-bold text-blue-500 tracking-[0.15em] uppercase mb-1">ประสิทธิภาพในการทำกำไรของสาขา</p>
+        <h1 class="text-3xl lg:text-4xl font-bold text-slate-800">แดชบอร์ดการเงิน <span class="text-blue-600">สาขาวัดโพธิ์</span></h1>
+      </div>
+
+      <div class="flex items-center gap-3 flex-wrap">
+        <!-- Year select -->
+        <div class="relative">
+          <i class="fa-solid fa-calendar-days text-blue-500 text-xs absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <select id="yearSelect" class="select-pill appearance-none text-blue-800 font-semibold text-base rounded-full pl-9 pr-9 py-2.5 outline-none cursor-pointer"></select>
+          <i class="fa-solid fa-chevron-down text-blue-500 text-xs absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+        </div>
+
+        <!-- Month-within-year select (first option = whole year) -->
+        <div class="relative">
+          <i class="fa-solid fa-calendar-week text-blue-500 text-xs absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <select id="monthSelect" class="select-pill appearance-none text-blue-800 font-semibold text-base rounded-full pl-9 pr-9 py-2.5 outline-none cursor-pointer"></select>
+          <i class="fa-solid fa-chevron-down text-blue-500 text-xs absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+        </div>
+
+        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-600 via-blue-500 to-blue-400 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-blue-500/30 ring-2 ring-white/70">CN</div>
+      </div>
+    </header>
+
+    <div class="p-6 lg:p-10 space-y-6">
+
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
+        <div class="card kpi-card kpi-blue rounded-3xl p-6 relative overflow-hidden h-full flex flex-col">
+          <div class="flex items-center gap-3 mb-1">
+            <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center text-blue-600 text-lg">
+              <i class="fa-solid fa-money-bill-wave"></i>
+            </div>
+            <p class="text-slate-900 text-base font-medium">รายรับ</p>
+          </div>
+          <div class="mt-2">
+            <h3 id="kpiRevenue" class="text-slate-900 font-bold text-3xl">-</h3>
+          </div>
+          <div class="mt-auto pt-4">
+            <span id="kpiRevenueSub" class="text-sm font-semibold px-2.5 py-1.5 rounded-full inline-flex items-center gap-1.5"></span>
+          </div>
+        </div>
+        <div class="card kpi-card kpi-rose rounded-3xl p-6 relative overflow-hidden h-full flex flex-col">
+          <div class="flex items-center gap-3 mb-1">
+            <div class="w-10 h-10 rounded-xl bg-rose-500/15 flex items-center justify-center text-rose-600 text-lg">
+              <i class="fa-solid fa-receipt"></i>
+            </div>
+            <p class="text-slate-900 text-base font-medium">รายจ่าย</p>
+          </div>
+          <div class="mt-2">
+            <h3 id="kpiExpense" class="text-slate-900 font-bold text-3xl">-</h3>
+          </div>
+          <div class="mt-auto pt-4">
+            <span id="kpiExpenseSub" class="text-sm font-semibold px-2.5 py-1.5 rounded-full inline-flex items-center gap-1.5"></span>
+          </div>
+        </div>
+        <div class="card kpi-card kpi-emerald rounded-3xl p-6 relative overflow-hidden h-full flex flex-col">
+          <div class="flex items-center gap-3 mb-1">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center text-emerald-600 text-lg">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <p class="text-slate-900 text-base font-medium">กำไร</p>
+          </div>
+          <div class="mt-2">
+            <h3 id="kpiProfit" class="text-slate-900 font-bold text-3xl">-</h3>
+          </div>
+          <div class="mt-auto pt-4">
+            <span id="kpiProfitSub" class="text-sm font-semibold px-2.5 py-1.5 rounded-full inline-flex items-center gap-1.5"></span>
+          </div>
+        </div>
+        <div class="card kpi-card kpi-violet rounded-3xl p-6 relative overflow-hidden h-full flex flex-col">
+          <div class="flex items-center gap-3 mb-1">
+            <div class="w-10 h-10 rounded-xl bg-violet-500/15 flex items-center justify-center text-violet-600 text-lg">
+              <i class="fa-solid fa-piggy-bank"></i>
+            </div>
+            <p class="text-slate-900 text-base font-medium">กำไรสะสม</p>
+          </div>
+          <div class="mt-2 flex items-center gap-3 flex-wrap">
+            <h3 id="kpiCum" class="text-slate-900 font-bold text-3xl">-</h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cash Flow + Sales Mix -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 card rounded-3xl p-6 flex flex-col">
+          <div class="flex justify-between items-center mb-2 flex-wrap gap-3">
+            <h2 class="text-lg font-bold text-slate-900">รายรับเทียบกำไร</h2>
+            <div class="relative">
+              <select id="rangeSelect" class="appearance-none bg-blue-100 text-blue-800 font-medium text-base rounded-full pl-4 pr-9 py-2.5 outline-none cursor-pointer">
+                <option value="6">6 เดือนล่าสุด</option>
+                <option value="12">12 เดือนล่าสุด</option>
+                <option value="18" selected>ทั้งหมด (18 เดือน)</option>
+              </select>
+              <i class="fa-solid fa-chevron-down text-blue-600 text-xs absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            </div>
+          </div>
+          <p class="text-sm text-slate-700 mb-3">แท่ง = รายรับรายเดือน, เส้น = กำไร/ขาดทุนสุทธิรายเดือน</p>
+          <div class="relative w-full flex-1 min-h-[15rem]">
+            <canvas id="cashFlowChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card rounded-3xl p-6 flex flex-col">
+          <h2 class="text-lg font-bold text-slate-900 mb-3">สัดส่วนรายรับ</h2>
+          <div class="relative w-full flex justify-center h-[11rem]">
+            <canvas id="categoryDonutChart"></canvas>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span class="text-[11px] text-slate-500">รวมรายรับ</span>
+              <span id="donutCenterTotal" class="text-lg font-bold text-slate-900">-</span>
+            </div>
+          </div>
+          <div id="donutLegend" class="mt-4 space-y-1.5 text-sm text-slate-800"></div>
+        </div>
+      </div>
+
+      <!-- Extra depth: expense breakdown -->
+      <div id="reportsSection" class="grid grid-cols-1 gap-6 pt-4">
+        <div class="card rounded-3xl p-6">
+          <h2 class="text-lg font-bold text-slate-900 mb-1">โครงสร้างรายจ่าย</h2>
+          <p id="expenseTotalLabel" class="text-sm text-slate-700 mb-4">รวม -</p>
+          <div class="relative h-44 w-full">
+            <canvas id="expensesBarChart"></canvas>
+          </div>
+          <div id="expenseLegend" class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-sm text-slate-800"></div>
+        </div>
+      </div>
+
+      <!-- P&L table -->
+      <div class="grid grid-cols-1 gap-6 pb-10">
+        <div class="card rounded-3xl p-6">
+          <h2 class="text-lg font-bold text-slate-900 mb-4">สรุปกำไรขาดทุน - <span id="tableMonthLabel">-</span></h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse [font-variant-numeric:tabular-nums]">
+              <thead>
+                <tr class="border-b-2 border-blue-100 text-slate-500 text-xs font-semibold uppercase tracking-wide">
+                  <th class="py-2.5 pr-4 font-semibold">รายการ</th>
+                  <th class="py-2.5 pr-4 font-semibold text-right">จำนวนเงิน (บาท)</th>
+                  <th class="py-2.5 pr-4 font-semibold text-right">% ต่อรายรับ</th>
+                </tr>
+              </thead>
+              <tbody id="plTableBody" class="text-base"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script id="dashData" type="application/json">{"months":["2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05"],"labels":["พฤศจิกายน 2567","ธันวาคม 2567","มกราคม 2568","กุมภาพันธ์ 2568","มีนาคม 2568","เมษายน 2568","มิถุนายน 2568","กรกฎาคม 2568","สิงหาคม 2568","กันยายน 2568","ตุลาคม 2568","พฤศจิกายน 2568","ธันวาคม 2568","มกราคม 2569","กุมภาพันธ์ 2569","มีนาคม 2569","เมษายน 2569","พฤษภาคม 2569"],"summary":{"2024-11":{"label":"พฤศจิกายน 2567","revenue":604726.0,"expense":1019057.71,"profit":-414331.71,"cups":7935.0,"avg_cups_day":396.0,"cum_profit":-414331.71,"rev_mom":null,"exp_mom":null,"profit_mom":null,"days":30},"2024-12":{"label":"ธันวาคม 2567","revenue":1066128.0,"expense":773990.2,"profit":292137.8,"cups":13895.0,"avg_cups_day":448.0,"cum_profit":-122193.91000000003,"rev_mom":76.29934879598363,"exp_mom":-24.048442752079275,"profit_mom":170.50819257835707,"days":31},"2025-01":{"label":"มกราคม 2568","revenue":1232431.0,"expense":626191.98,"profit":606239.02,"cups":17056.0,"avg_cups_day":550.0,"cum_profit":484045.11,"rev_mom":15.598783635736046,"exp_mom":-19.095619040137716,"profit_mom":107.51817121919862,"days":31},"2025-02":{"label":"กุมภาพันธ์ 2568","revenue":1163852.0,"expense":820726.29,"profit":343125.71,"cups":15522.0,"avg_cups_day":554.0,"cum_profit":827170.8200000001,"rev_mom":-5.564530590353537,"exp_mom":31.066241059171674,"profit_mom":-43.40091965706859,"days":28},"2025-03":{"label":"มีนาคม 2568","revenue":1041501.0,"expense":675213.72,"profit":366287.28,"cups":13986.0,"avg_cups_day":451.0,"cum_profit":1193458.1,"rev_mom":-10.51259094798995,"exp_mom":-17.729731796455557,"profit_mom":6.750170367589186,"days":31},"2025-04":{"label":"เมษายน 2568","revenue":888335.0,"expense":665301.46,"profit":223033.54,"cups":12038.0,"avg_cups_day":401.0,"cum_profit":1416491.6400000001,"rev_mom":-14.706274885957862,"exp_mom":-1.4680181557922147,"profit_mom":-39.10966823636355,"days":30},"2025-06":{"label":"มิถุนายน 2568","revenue":855643.0,"expense":643670.81,"profit":211972.19,"cups":null,"avg_cups_day":null,"cum_profit":1628463.83,"rev_mom":-3.6801431892247853,"exp_mom":-3.251255453430075,"profit_mom":-4.959500710072577,"days":30},"2025-07":{"label":"กรกฎาคม 2568","revenue":1097626.0,"expense":1029189.0,"profit":68437.0,"cups":null,"avg_cups_day":null,"cum_profit":1696900.83,"rev_mom":28.280836750841182,"exp_mom":59.893688514475265,"profit_mom":-67.71416099442101,"days":31},"2025-08":{"label":"สิงหาคม 2568","revenue":1144797.0,"expense":779892.65,"profit":364904.35,"cups":14161.0,"avg_cups_day":456.0,"cum_profit":2061805.1800000002,"rev_mom":4.297547616401215,"exp_mom":-24.222601485247118,"profit_mom":433.19746628285867,"days":31},"2025-09":{"label":"กันยายน 2568","revenue":834129.0,"expense":879714.89,"profit":-45585.89,"cups":10799.0,"avg_cups_day":360.0,"cum_profit":2016219.2900000003,"rev_mom":-27.137387676592446,"exp_mom":12.799484647021611,"profit_mom":-112.49255866640122,"days":30},"2025-10":{"label":"ตุลาคม 2568","revenue":1062858.0,"expense":970265.77,"profit":92592.23,"cups":13427.0,"avg_cups_day":433.0,"cum_profit":2108811.5200000005,"rev_mom":27.421298144531605,"exp_mom":10.29320760956996,"profit_mom":303.11598610885954,"days":31},"2025-11":{"label":"พฤศจิกายน 2568","revenue":1246909.0,"expense":945642.23,"profit":301266.77,"cups":15928.0,"avg_cups_day":530.0,"cum_profit":2410078.2900000005,"rev_mom":17.316612379076037,"exp_mom":-2.5378139434930325,"profit_mom":225.3693857465146,"days":30},"2025-12":{"label":"ธันวาคม 2568","revenue":1400505.0,"expense":1041707.12,"profit":358797.88,"cups":17608.0,"avg_cups_day":568.0,"cum_profit":2768876.1700000004,"rev_mom":12.318140297327231,"exp_mom":10.158692891708105,"profit_mom":19.096400841022056,"days":31},"2026-01":{"label":"มกราคม 2569","revenue":1554573.0,"expense":1121200.05,"profit":433372.95,"cups":19889.0,"avg_cups_day":641.0,"cum_profit":3202249.1200000006,"rev_mom":11.000888965051892,"exp_mom":7.631024927620736,"profit_mom":20.784701960892303,"days":31},"2026-02":{"label":"กุมภาพันธ์ 2569","revenue":1382082.0,"expense":1216444.71,"profit":165637.29,"cups":17383.0,"avg_cups_day":621.0,"cum_profit":3367886.4100000006,"rev_mom":-11.095715672406506,"exp_mom":8.494885457773563,"profit_mom":-61.77950423532433,"days":28},"2026-03":{"label":"มีนาคม 2569","revenue":1306476.0,"expense":847287.66,"profit":459188.34,"cups":16576.0,"avg_cups_day":534.0,"cum_profit":3827074.7500000005,"rev_mom":-5.470442419480175,"exp_mom":-30.347211588432977,"profit_mom":177.22521903129424,"days":31},"2026-04":{"label":"เมษายน 2569","revenue":1017265.0,"expense":1054229.1,"profit":-36964.1000000001,"cups":13589.0,"avg_cups_day":452.0,"cum_profit":3790110.6500000004,"rev_mom":-22.136725052737287,"exp_mom":24.423988424427197,"profit_mom":-108.04987774733132,"days":30},"2026-05":{"label":"พฤษภาคม 2569","revenue":1105813.0,"expense":848996.15,"profit":256816.85,"cups":14456.0,"avg_cups_day":466.0,"cum_profit":4046927.5000000005,"rev_mom":8.704516522243466,"exp_mom":-19.467585366406603,"profit_mom":794.7737128727586,"days":31}},"rev_cat":{"2024-11":{"กาแฟ":269085.0,"ชา":101065.0,"น้ำผลไม้/สมูทตี้/นม":158282.0,"เบเกอรี่/ช็อกโกแลต":59414.0,"อื่นๆ (สินค้าอื่น)":16880.0},"2024-12":{"กาแฟ":461070.0,"ชา":187700.0,"น้ำผลไม้/สมูทตี้/นม":260502.0,"เบเกอรี่/ช็อกโกแลต":126336.0,"อื่นๆ (สินค้าอื่น)":30520.0},"2025-01":{"กาแฟ":590495.0,"ชา":236275.0,"น้ำผลไม้/สมูทตี้/นม":245850.0,"เบเกอรี่/ช็อกโกแลต":132190.0,"อื่นๆ (สินค้าอื่น)":27621.0},"2025-02":{"กาแฟ":552535.0,"ชา":201615.0,"น้ำผลไม้/สมูทตี้/นม":285492.0,"เบเกอรี่/ช็อกโกแลต":110226.0,"อื่นๆ (สินค้าอื่น)":13984.0},"2025-03":{"กาแฟ":472195.0,"ชา":193850.0,"น้ำผลไม้/สมูทตี้/นม":242439.0,"เบเกอรี่/ช็อกโกแลต":105254.0,"อื่นๆ (สินค้าอื่น)":27763.0},"2025-04":{"กาแฟ":355455.0,"ชา":201180.0,"น้ำผลไม้/สมูทตี้/นม":203750.0,"เบเกอรี่/ช็อกโกแลต":92241.0,"อื่นๆ (สินค้าอื่น)":35709.0},"2025-06":{"กาแฟ":336955.0,"ชา":175110.0,"น้ำผลไม้/สมูทตี้/นม":200238.0,"เบเกอรี่/ช็อกโกแลต":97091.0,"อื่นๆ (สินค้าอื่น)":46249.0},"2025-07":{"กาแฟ":449325.0,"ชา":183735.0,"น้ำผลไม้/สมูทตี้/นม":256493.0,"เบเกอรี่/ช็อกโกแลต":136642.0,"อื่นๆ (สินค้าอื่น)":71431.0},"2025-08":{"กาแฟ":460965.0,"ชา":178685.0,"น้ำผลไม้/สมูทตี้/นม":266573.0,"เบเกอรี่/ช็อกโกแลต":127525.0,"อื่นๆ (สินค้าอื่น)":111049.0},"2025-09":{"กาแฟ":371305.0,"ชา":148635.0,"น้ำผลไม้/สมูทตี้/นม":152976.0,"เบเกอรี่/ช็อกโกแลต":91511.0,"อื่นๆ (สินค้าอื่น)":69702.0},"2025-10":{"กาแฟ":459525.0,"ชา":188535.0,"น้ำผลไม้/สมูทตี้/นม":225895.0,"เบเกอรี่/ช็อกโกแลต":120311.0,"อื่นๆ (สินค้าอื่น)":68592.0},"2025-11":{"กาแฟ":608010.0,"ชา":180660.0,"น้ำผลไม้/สมูทตี้/นม":260335.0,"เบเกอรี่/ช็อกโกแลต":122733.0,"อื่นๆ (สินค้าอื่น)":75171.0},"2025-12":{"กาแฟ":622305.0,"ชา":221450.0,"น้ำผลไม้/สมูทตี้/นม":295781.0,"เบเกอรี่/ช็อกโกแลต":161750.0,"อื่นๆ (สินค้าอื่น)":99219.0},"2026-01":{"กาแฟ":738905.0,"ชา":270390.0,"น้ำผลไม้/สมูทตี้/นม":298915.0,"เบเกอรี่/ช็อกโกแลต":181891.0,"อื่นๆ (สินค้าอื่น)":64472.0},"2026-02":{"กาแฟ":647550.0,"ชา":224735.0,"น้ำผลไม้/สมูทตี้/นม":321095.0,"เบเกอรี่/ช็อกโกแลต":123854.0,"อื่นๆ (สินค้าอื่น)":64848.0},"2026-03":{"กาแฟ":560595.0,"ชา":240520.0,"น้ำผลไม้/สมูทตี้/นม":302466.0,"เบเกอรี่/ช็อกโกแลต":126334.0,"อื่นๆ (สินค้าอื่น)":76561.0},"2026-04":{"กาแฟ":399830.0,"ชา":228610.0,"น้ำผลไม้/สมูทตี้/นม":223859.0,"เบเกอรี่/ช็อกโกแลต":105158.0,"อื่นๆ (สินค้าอื่น)":59808.0},"2026-05":{"กาแฟ":426920.0,"ชา":235480.0,"น้ำผลไม้/สมูทตี้/นม":252397.0,"เบเกอรี่/ช็อกโกแลต":109536.0,"อื่นๆ (สินค้าอื่น)":81480.0}},"exp_group":{"2024-11":{"ต้นทุนพนักงาน":122775.0,"สาธารณูปโภค":0.0,"ค่าเช่า":0.0,"ต้นทุนวัตถุดิบ/สินค้า":783357.61,"อื่นๆ":112829.28,"ค่าธรรมเนียมธนาคาร/บัตร":95.82,"อุปกรณ์และวัสดุสิ้นเปลือง":0.0,"ภาษี/บัญชี/แฟรนไชส์":0.0,"ส่วนลด/โปรโมชั่น":0.0},"2024-12":{"ต้นทุนพนักงาน":163550.0,"สาธารณูปโภค":0.0,"ค่าเช่า":0.0,"ต้นทุนวัตถุดิบ/สินค้า":574981.85,"อื่นๆ":28011.0,"ค่าธรรมเนียมธนาคาร/บัตร":1597.51,"อุปกรณ์และวัสดุสิ้นเปลือง":2969.84,"ภาษี/บัญชี/แฟรนไชส์":2140.0,"ส่วนลด/โปรโมชั่น":740.0},"2025-01":{"ต้นทุนพนักงาน":159230.0,"สาธารณูปโภค":2515.0,"ค่าเช่า":0.0,"ต้นทุนวัตถุดิบ/สินค้า":350944.58999999997,"อื่นๆ":30716.8,"ค่าธรรมเนียมธนาคาร/บัตร":1903.24,"อุปกรณ์และวัสดุสิ้นเปลือง":14101.939999999999,"ภาษี/บัญชี/แฟรนไชส์":65880.41,"ส่วนลด/โปรโมชั่น":900.0},"2025-02":{"ต้นทุนพนักงาน":161230.0,"สาธารณูปโภค":32765.0,"ค่าเช่า":0.0,"ต้นทุนวัตถุดิบ/สินค้า":473964.22000000003,"อื่นๆ":8889.0,"ค่าธรรมเนียมธนาคาร/บัตร":2085.7599999999998,"อุปกรณ์และวัสดุสิ้นเปลือง":4493.0,"ภาษี/บัญชี/แฟรนไชส์":116832.31,"ส่วนลด/โปรโมชั่น":20467.0},"2025-03":{"ต้นทุนพนักงาน":152350.0,"สาธารณูปโภค":18800.0,"ค่าเช่า":0.0,"ต้นทุนวัตถุดิบ/สินค้า":383491.05,"อื่นๆ":5376.0,"ค่าธรรมเนียมธนาคาร/บัตร":1835.7199999999998,"อุปกรณ์และวัสดุสิ้นเปลือง":2414.0,"ภาษี/บัญชี/แฟรนไชส์":109568.95,"ส่วนลด/โปรโมชั่น":1378.0},"2025-04":{"ต้นทุนพนักงาน":160335.0,"สาธารณูปโภค":10962.0,"ค่าเช่า":0.0,"ต้นทุนวัตถุดิบ/สินค้า":377581.81,"อื่นๆ":1112.0,"ค่าธรรมเนียมธนาคาร/บัตร":1369.8,"อุปกรณ์และวัสดุสิ้นเปลือง":4902.5,"ภาษี/บัญชี/แฟรนไชส์":107162.85,"ส่วนลด/โปรโมชั่น":1875.5},"2025-06":{"ต้นทุนพนักงาน":148515.0,"สาธารณูปโภค":16823.0,"ค่าเช่า":80000.0,"ต้นทุนวัตถุดิบ/สินค้า":290668.96,"อื่นๆ":15687.0,"ค่าธรรมเนียมธนาคาร/บัตร":1575.6699999999998,"อุปกรณ์และวัสดุสิ้นเปลือง":8313.34,"ภาษี/บัญชี/แฟรนไชส์":81622.84,"ส่วนลด/โปรโมชั่น":465.0},"2025-07":{"ต้นทุนพนักงาน":166022.0,"สาธารณูปโภค":21188.0,"ค่าเช่า":80000.0,"ต้นทุนวัตถุดิบ/สินค้า":621476.51,"อื่นๆ":46492.0,"ค่าธรรมเนียมธนาคาร/บัตร":2067.44,"อุปกรณ์และวัสดุสิ้นเปลือง":10192.99,"ภาษี/บัญชี/แฟรนไชส์":80793.06,"ส่วนลด/โปรโมชั่น":957.0},"2025-08":{"ต้นทุนพนักงาน":162380.0,"สาธารณูปโภค":16521.0,"ค่าเช่า":80000.0,"ต้นทุนวัตถุดิบ/สินค้า":423295.13,"อื่นๆ":4952.0,"ค่าธรรมเนียมธนาคาร/บัตร":2565.9,"อุปกรณ์และวัสดุสิ้นเปลือง":6489.09,"ภาษี/บัญชี/แฟรนไชส์":82968.53,"ส่วนลด/โปรโมชั่น":721.0},"2025-09":{"ต้นทุนพนักงาน":166465.0,"สาธารณูปโภค":15410.0,"ค่าเช่า":80000.0,"ต้นทุนวัตถุดิบ/สินค้า":342978.84,"อื่นๆ":108234.0,"ค่าธรรมเนียมธนาคาร/บัตร":1586.8799999999999,"อุปกรณ์และวัสดุสิ้นเปลือง":7720.84,"ภาษี/บัญชี/แฟรนไชส์":152799.33000000002,"ส่วนลด/โปรโมชั่น":4520.0},"2025-10":{"ต้นทุนพนักงาน":148385.0,"สาธารณูปโภค":14141.0,"ค่าเช่า":212000.0,"ต้นทุนวัตถุดิบ/สินค้า":484481.69,"อื่นๆ":4992.0,"ค่าธรรมเนียมธนาคาร/บัตร":2135.6800000000003,"อุปกรณ์และวัสดุสิ้นเปลือง":7999.48,"ภาษี/บัญชี/แฟรนไชส์":94014.92,"ส่วนลด/โปรโมชั่น":2116.0},"2025-11":{"ต้นทุนพนักงาน":147110.0,"สาธารณูปโภค":16784.0,"ค่าเช่า":80000.0,"ต้นทุนวัตถุดิบ/สินค้า":582734.54,"อื่นๆ":6673.0,"ค่าธรรมเนียมธนาคาร/บัตร":2756.28,"อุปกรณ์และวัสดุสิ้นเปลือง":25558.38,"ภาษี/บัญชี/แฟรนไชส์":83548.03,"ส่วนลด/โปรโมชั่น":478.0},"2025-12":{"ต้นทุนพนักงาน":152686.0,"สาธารณูปโภค":14674.0,"ค่าเช่า":80000.0,"ต้นทุนวัตถุดิบ/สินค้า":668806.04,"อื่นๆ":9386.0,"ค่าธรรมเนียมธนาคาร/บัตร":3154.97,"อุปกรณ์และวัสดุสิ้นเปลือง":9918.91,"ภาษี/บัญชี/แฟรนไชส์":100819.45,"ส่วนลด/โปรโมชั่น":2261.75},"2026-01":{"ต้นทุนพนักงาน":278715.0,"สาธารณูปโภค":17352.0,"ค่าเช่า":80000.0,"ต้นทุนวัตถุดิบ/สินค้า":566252.48,"อื่นๆ":50069.0,"ค่าธรรมเนียมธนาคาร/บัตร":2976.52,"อุปกรณ์และวัสดุสิ้นเปลือง":7843.84,"ภาษี/บัญชี/แฟรนไชส์":114773.96,"ส่วนลด/โปรโมชั่น":3217.25},"2026-02":{"ต้นทุนพนักงาน":159192.0,"สาธารณูปโภค":18439.0,"ค่าเช่า":82263.0,"ต้นทุนวัตถุดิบ/สินค้า":721973.74,"อื่นๆ":70499.0,"ค่าธรรมเนียมธนาคาร/บัตร":2619.37,"อุปกรณ์และวัสดุสิ้นเปลือง":3970.2,"ภาษี/บัญชี/แฟรนไชส์":141273.4,"ส่วนลด/โปรโมชั่น":16215.0},"2026-03":{"ต้นทุนพนักงาน":162190.0,"สาธารณูปโภค":17713.0,"ค่าเช่า":80000.0,"ต้นทุนวัตถุดิบ/สินค้า":427097.71,"อื่นๆ":26988.0,"ค่าธรรมเนียมธนาคาร/บัตร":2421.22,"อุปกรณ์และวัสดุสิ้นเปลือง":3914.2200000000003,"ภาษี/บัญชี/แฟรนไชส์":125141.01,"ส่วนลด/โปรโมชั่น":1822.5},"2026-04":{"ต้นทุนพนักงาน":170785.0,"สาธารณูปโภค":20048.0,"ค่าเช่า":80000.0,"ต้นทุนวัตถุดิบ/สินค้า":545606.42,"อื่นๆ":97094.0,"ค่าธรรมเนียมธนาคาร/บัตร":1610.61,"อุปกรณ์และวัสดุสิ้นเปลือง":3633.9,"ภาษี/บัญชี/แฟรนไชส์":132335.66999999998,"ส่วนลด/โปรโมชั่น":3115.5},"2026-05":{"ต้นทุนพนักงาน":158295.0,"สาธารณูปโภค":23892.0,"ค่าเช่า":80000.0,"ต้นทุนวัตถุดิบ/สินค้า":368905.52,"อื่นๆ":91261.0,"ค่าธรรมเนียมธนาคาร/บัตร":2078.41,"อุปกรณ์และวัสดุสิ้นเปลือง":11218.54,"ภาษี/บัญชี/แฟรนไชส์":111642.93,"ส่วนลด/โปรโมชั่น":1702.75}},"grp_order":["ต้นทุนพนักงาน","สาธารณูปโภค","ค่าเช่า","ต้นทุนวัตถุดิบ/สินค้า","อื่นๆ","ค่าธรรมเนียมธนาคาร/บัตร","อุปกรณ์และวัสดุสิ้นเปลือง","ภาษี/บัญชี/แฟรนไชส์","ส่วนลด/โปรโมชั่น"],"cat_order":["กาแฟ","ชา","น้ำผลไม้/สมูทตี้/นม","เบเกอรี่/ช็อกโกแลต","อื่นๆ (สินค้าอื่น)"],"misc_items":{"2024-11":{"เบเกอรี่แห้งอเมซอน":90702.28,"เบเกอรี่สด":22127.0},"2024-12":{"เดินระบบน้ำประปา":15000.0,"ค่าประกันอัคคีภัย":11912.0,"คชจ.เบ็ดเตล็ด":1099.0},"2025-01":{"คชจ.เบ็ดเตล็ด":2532.0,"สำรองค่ากาแฟ":28184.8},"2025-02":{"ค่าอาหาร/สำรองคชจ./เครื่องดื่มพระ":8379.0,"ค่าหนังสือรับรองสถานที่สะสมอาหาร":510.0},"2025-03":{"ค่าอาหาร/สำรองคชจ./เครื่องดื่มพระ":1462.0,"ค่าโอนเงิน/ค่าส่งเอกสาร":914.0,"สนับสนุนชมรมบีนัมเบอร์วัน":3000.0},"2025-04":{"ค่าอาหาร/สำรองคชจ./เครื่องดื่มพระ":930.0,"ค่าโอนเงิน/ค่าส่งเอกสาร":182.0},"2025-06":{"ค่าอาหาร/สำรองคชจ./เครื่องดื่มพระ":5550.0,"ค่าส่งเอกสาร/โอนเงิน":137.0,"สำรอง คชจ.คุณขวัญดาว":10000.0},"2025-07":{"ค่าอาหาร/ค่าเดินทางพนักงาน/เครื่องดื่มพระ":8558.0,"ค่าถังปั๊มน้ำ+ค่าแรงติดตั้ง":5790.0,"ค่าอบรมบาริสต้า":5000.0,"กล้องวงจรปิดพูดได้ 4 ตัว":26900.0,"ค่าส่งเอกสาร":244.0},"2025-08":{"ค่าอาหาร/เครื่องดื่ม":3330.0,"เทสเมนูเครื่องดื่ม":1320.0,"ค่าโอนเงิน/ค่าเคลือบเอกสาร":302.0},"2025-09":{"ค่าอาหาร/เครื่องดื่ม":5268.0,"ค่าโอนเงิน/ค่าขนส่ง/ค่าส่งเอกสาร":2416.0,"ค่าเครื่องดื่มถวายวัด":16950.0,"วัดพลายชุมพล":50000.0,"ค่าแอร์1ตัวพร้อมค่าติดตั้ง":33600.0},"2025-10":{"ค่าอาหาร/เครื่องดื่ม":2460.0,"ค่าโอนเงิน/ค่าขนส่ง/ค่าส่งเอกสาร":182.0,"ซื้อจักรยาน1คัน":2350.0},"2025-11":{"ค่าอาหาร/เครื่องดื่ม/เบ็ดเตล็ด":2765.0,"ค่าโอนเงิน/ค่าขนส่ง/ค่าส่งเอกสาร":228.0,"ค่าเดินทาง":3680.0},"2025-12":{"ค่าอาหาร/เครื่องดื่ม/เบ็ดเตล็ด":9154.0,"ค่าโอนเงิน/ค่าขนส่ง/ค่าส่งเอกสาร":232.0},"2026-01":{"ค่าอาหาร/เครื่องดื่ม/เบ็ดเตล็ด":5648.0,"ค่าส่งเอกสาร/ป้ายทิ้งขยะ":757.0,"ค่าเดินทาง":5400.0,"ค่าของขวัญจับฉลากพนักงาน":2000.0,"ออเดอร์เจ้าคาว":28294.0,"ค่าเครื่องดื่ม/คชจ.เจ้าคาว/เครื่องดื่มพระวัดพลาย":7970.0},"2026-02":{"ค่าอาหาร/เครื่องดื่ม/เบ็ดเตล็ด":3835.0,"ภาษีสถานที่สะสมอาหาร":600.0,"ค่าเดินทาง":876.0,"ค่าส่งเอกสาร":160.0,"รางวัลคะแนนออดิตเต็ม":6000.0,"รางวัลยอดขายชาไทยพรีเมี่ยม":25000.0,"ซ่อมตู้แช่":1998.0,"ประกันอัคคีภัย":11900.0,"ค่ากำจัดแมลง1ปี":20030.0,"ค่าโอนเงิน":100.0},"2026-03":{"ค่าอาหาร/เครื่องดื่ม/เบ็ดเตล็ด":2750.0,"ค่าตั๋วเครื่องบิน":11000.0,"ค่าส่งเอกสาร":538.0,"รางวัลคะแนนออดิตเต็ม":7000.0,"ค่าล้างแอร์":2700.0,"สนับสนุนประกวดนางงามชมพู":3000.0},"2026-04":{"ซื้อดอกไม้":1000.0,"เจ้าคาว":2788.0,"ค่าโอนเงิน/ส่งเอกสาร":162.0,"ค่าเครื่องดื่มสนับสนุน":84750.0,"ค่าเครื่องดื่มรับรองพระ/พิมพ์/พี่ตี๊ะ/เจ้าคาว":8394.0},"2026-05":{"ค่าโอนเงิน/ส่งเอกสาร":808.0,"ค่าเครื่องดื่มสนับสนุนออเดอร์เจ้าคาว":79750.0,"ค่าเครื่องดื่มรับรองพระ/พิมพ์/พี่ตี๊ะ/เจ้าคาว":4345.0,"ค่าทำ PM เครื่องกาแฟ":1358.0,"คะแนนออดิต":5000.0}}}</script>
+
+<script>
+const DATA = JSON.parse(document.getElementById('dashData').textContent);
+Chart.defaults.font.family = "'Inter','Noto Sans Thai', sans-serif";
+Chart.defaults.color = '#64748b';
+
+const fmtNum = n => Math.round(n).toLocaleString('en-US');
+const fmtShort = n => {
+  const abs = Math.abs(n); const sign = n < 0 ? '-' : '';
+  if (abs >= 1000000) return sign + (abs/1000000).toFixed(2) + ' ล้านบาท';
+  if (abs >= 100000) return sign + (abs/100000).toFixed(2) + ' แสนบาท';
+  return sign + fmtNum(abs) + ' บาท';
+};
+const badgeHtml = (pct, goodIsUp) => {
+  if (pct === null || pct === undefined || !isFinite(pct)) {
+    return { tone: 'neutral', text: 'ไม่มีข้อมูล' };
+  }
+  const isUp = pct >= 0;
+  const good = goodIsUp ? isUp : !isUp;
+  const word = isUp ? 'เพิ่มขึ้น' : 'ลดลง';
+  return { tone: good ? 'good' : 'bad', text: word + ' ' + Math.abs(pct).toFixed(1) + '%' };
+};
+
+const toneStyles = {
+  good:    { pill: 'bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-300/60 shadow-sm shadow-emerald-900/5', label: 'text-emerald-700/60' },
+  bad:     { pill: 'bg-gradient-to-br from-rose-100 to-rose-50 text-rose-700 ring-1 ring-inset ring-rose-300/60 shadow-sm shadow-rose-900/5', label: 'text-rose-700/60' },
+  neutral: { pill: 'bg-slate-100 text-slate-500 ring-1 ring-inset ring-slate-200', label: 'text-slate-400' }
+};
+
+// Colors drawn from the dashboard's own palette (the same blue/violet/emerald/rose/amber
+// used across the KPI cards) so this chart feels like part of the same design system,
+// rather than a literal "coffee brown / tea orange" scheme.
+const catColors = {
+  'กาแฟ': '#2563EB', 'ชา': '#7C3AED',
+  'น้ำผลไม้/สมูทตี้/นม': '#059669',
+  'เบเกอรี่/ช็อกโกแลต': '#E11D48',
+  'อื่นๆ (สินค้าอื่น)': '#F59E0B'
+};
+const grpColors = {
+  'ต้นทุนวัตถุดิบ/สินค้า': '#1e2433', 'ต้นทุนพนักงาน': '#64748b',
+  'ภาษี/บัญชี/แฟรนไชส์': '#94a3b8', 'ค่าเช่า': '#c7d2fe', 'อื่นๆ': '#f43f5e',
+  'สาธารณูปโภค': '#60a5fa', 'อุปกรณ์และวัสดุสิ้นเปลือง': '#a78bfa',
+  'ส่วนลด/โปรโมชั่น': '#fbbf24', 'ค่าธรรมเนียมธนาคาร/บัตร': '#fb923c'
+};
+
+// --- Year aggregation (computed client-side from the monthly data already loaded) ---
+const beYearOf = mk => Number(mk.split('-')[0]) + 543;
+const yearsList = [...new Set(DATA.months.map(beYearOf))].sort((a,b)=>a-b);
+const yearAgg = {};
+yearsList.forEach(y => {
+  const monthsInYear = DATA.months.filter(mk => beYearOf(mk) === y);
+  let revenue=0, expense=0, profit=0, cupsSum=0, cupsCount=0, daysSum=0;
+  const rev_cat = {}; DATA.cat_order.forEach(c=>rev_cat[c]=0);
+  const exp_group = {}; DATA.grp_order.forEach(g=>exp_group[g]=0);
+  monthsInYear.forEach(mk => {
+    const s = DATA.summary[mk];
+    revenue += s.revenue; expense += s.expense; profit += s.profit; daysSum += (s.days||0);
+    if (s.cups) { cupsSum += s.cups; cupsCount++; }
+    DATA.cat_order.forEach(c => rev_cat[c] += (DATA.rev_cat[mk][c]||0));
+    DATA.grp_order.forEach(g => exp_group[g] += (DATA.exp_group[mk][g]||0));
+  });
+  const lastMk = monthsInYear[monthsInYear.length-1];
+  yearAgg[y] = {
+    months: monthsInYear,
+    label: 'ปี ' + y + ' (' + monthsInYear.length + ' เดือน)',
+    revenue, expense, profit, days: daysSum,
+    cups: cupsCount ? cupsSum : null,
+    cum_profit: DATA.summary[lastMk].cum_profit,
+    rev_cat, exp_group
+  };
+});
+// Given a month key like '2026-05', return the same calendar month one BE year earlier
+// (e.g. '2025-05'). Used so a partial year (e.g. only Jan-May so far) is compared against
+// the same Jan-May months last year, not a full 12-month year.
+function samePrevYearKey(mk) {
+  const [ceYear, mm] = mk.split('-');
+  return (Number(ceYear) - 1) + '-' + mm;
+}
+
+// Year-over-year deltas: only use the calendar months that exist in BOTH years (the
+// intersection), summed on both sides, so partial years and data gaps are compared
+// like-for-like instead of a partial year vs. a full 12-month year (or vice versa).
+yearsList.forEach((y,i) => {
+  const hasPrevYear = i > 0;
+  if (!hasPrevYear) {
+    yearAgg[y].rev_mom = null; yearAgg[y].exp_mom = null; yearAgg[y].profit_mom = null;
+    return;
+  }
+  let curRevenue = 0, curExpense = 0, curProfit = 0;
+  let prevRevenue = 0, prevExpense = 0, prevProfit = 0, matched = 0;
+  yearAgg[y].months.forEach(mk => {
+    const ps = DATA.summary[samePrevYearKey(mk)];
+    if (ps) {
+      const cs = DATA.summary[mk];
+      curRevenue += cs.revenue; curExpense += cs.expense; curProfit += cs.profit;
+      prevRevenue += ps.revenue; prevExpense += ps.expense; prevProfit += ps.profit;
+      matched++;
+    }
+  });
+  const pct = (cur, base) => (base ? (cur-base)/Math.abs(base)*100 : null);
+  if (matched === 0) {
+    yearAgg[y].rev_mom = null; yearAgg[y].exp_mom = null; yearAgg[y].profit_mom = null;
+  } else {
+    yearAgg[y].rev_mom = pct(curRevenue, prevRevenue);
+    yearAgg[y].exp_mom = pct(curExpense, prevExpense);
+    yearAgg[y].profit_mom = pct(curProfit, prevProfit);
+  }
+});
+
+// "ทั้งหมด" (all years): aggregate across the entire dataset. Since there's no period
+// before it, its growth badges naturally fall back to comparing against the starting data.
+const allAgg = (() => {
+  let revenue=0, expense=0, profit=0, daysSum=0;
+  const rev_cat = {}; DATA.cat_order.forEach(c=>rev_cat[c]=0);
+  const exp_group = {}; DATA.grp_order.forEach(g=>exp_group[g]=0);
+  DATA.months.forEach(mk => {
+    const s = DATA.summary[mk];
+    revenue += s.revenue; expense += s.expense; profit += s.profit; daysSum += (s.days||0);
+    DATA.cat_order.forEach(c => rev_cat[c] += (DATA.rev_cat[mk][c]||0));
+    DATA.grp_order.forEach(g => exp_group[g] += (DATA.exp_group[mk][g]||0));
+  });
+  const lastMk = DATA.months[DATA.months.length-1];
+  return {
+    label: 'ทั้งหมด (' + DATA.months.length + ' เดือน)',
+    revenue, expense, profit, days: daysSum,
+    cum_profit: DATA.summary[lastMk].cum_profit,
+    rev_cat, exp_group
+  };
+})();
+
+const yearSelect = document.getElementById('yearSelect');
+const allOpt = document.createElement('option'); allOpt.value = 'ALL'; allOpt.textContent = 'ทั้งหมดทุกปี';
+yearSelect.appendChild(allOpt);
+[...yearsList].reverse().forEach(y => {
+  const opt = document.createElement('option'); opt.value = 'Y-'+y; opt.textContent = 'ปี ' + y;
+  yearSelect.appendChild(opt);
+});
+
+const latestMk = DATA.months[DATA.months.length-1];
+const latestYear = beYearOf(latestMk);
+yearSelect.value = 'Y-' + latestYear;
+
+// Month-within-year select: first option is always "ทั้งปี" (whole year) or "ทั้งหมด" (all
+// years), followed by the months available for drill-down within that scope.
+const monthSelect = document.getElementById('monthSelect');
+function populateMonthSelect(year) {
+  monthSelect.innerHTML = '';
+  if (year === 'ALL') {
+    const allOpt = document.createElement('option');
+    allOpt.value = 'ALL'; allOpt.textContent = 'ทั้งหมดทุกปี';
+    monthSelect.appendChild(allOpt);
+    DATA.months.forEach(mk => {
+      const opt = document.createElement('option');
+      opt.value = mk; opt.textContent = DATA.summary[mk].label;
+      monthSelect.appendChild(opt);
+    });
+    return;
+  }
+  const wholeYearOpt = document.createElement('option');
+  wholeYearOpt.value = 'Y-' + year; wholeYearOpt.textContent = 'ทั้งปี';
+  monthSelect.appendChild(wholeYearOpt);
+  yearAgg[year].months.forEach(mk => {
+    const opt = document.createElement('option');
+    opt.value = mk; opt.textContent = DATA.summary[mk].label;
+    monthSelect.appendChild(opt);
+  });
+}
+populateMonthSelect(latestYear);
+monthSelect.value = latestMk;
+
+function getPeriod(key) {
+  if (key === 'ALL') {
+    return {
+      label: allAgg.label,
+      periodWord: 'ทั้งหมด',
+      mode: 'all',
+      summary: { revenue: allAgg.revenue, expense: allAgg.expense, profit: allAgg.profit, cum_profit: allAgg.cum_profit, rev_mom: null, exp_mom: null, profit_mom: null, cum_mom: null, days: allAgg.days },
+      rev_cat: allAgg.rev_cat, exp_group: allAgg.exp_group, months: DATA.months
+    };
+  }
+  if (key.startsWith('Y-')) {
+    const y = Number(key.slice(2));
+    const ya = yearAgg[y];
+    const yIdx = yearsList.indexOf(y);
+    const prevYa = yIdx > 0 ? yearAgg[yearsList[yIdx-1]] : null;
+    // Compare cumulative profit against the SAME point in the previous year (e.g. end of May
+    // last year, not end of December last year) so partial years line up fairly.
+    let cum_mom = null;
+    if (prevYa) {
+      const lastMk = ya.months[ya.months.length-1];
+      const prevSame = DATA.summary[samePrevYearKey(lastMk)];
+      if (prevSame) cum_mom = (ya.cum_profit - prevSame.cum_profit) / Math.abs(prevSame.cum_profit || 1) * 100;
+    }
+    return {
+      label: ya.label,
+      periodWord: 'ปีนี้',
+      mode: 'year',
+      summary: { revenue: ya.revenue, expense: ya.expense, profit: ya.profit, cum_profit: ya.cum_profit, rev_mom: ya.rev_mom, exp_mom: ya.exp_mom, profit_mom: ya.profit_mom, cum_mom, days: ya.days },
+      rev_cat: ya.rev_cat, exp_group: ya.exp_group, months: ya.months
+    };
+  }
+  const s = DATA.summary[key];
+  const idx = DATA.months.indexOf(key);
+  const prevMk = idx > 0 ? DATA.months[idx-1] : null;
+  const cum_mom = prevMk ? (s.cum_profit - DATA.summary[prevMk].cum_profit) / Math.abs(DATA.summary[prevMk].cum_profit || 1) * 100 : null;
+  return {
+    label: s.label,
+    periodWord: 'เดือนนี้',
+    mode: 'month',
+    summary: { revenue: s.revenue, expense: s.expense, profit: s.profit, cum_profit: s.cum_profit, rev_mom: s.rev_mom, exp_mom: s.exp_mom, profit_mom: s.profit_mom, cum_mom, days: s.days },
+    rev_cat: DATA.rev_cat[key], exp_group: DATA.exp_group[key], months: [key]
+  };
+}
+
+let cashFlowChart, donutChart, barChart;
+
+// Baseline = the very first record in the whole dataset (พ.ย. 2567), used as a fallback
+// comparison whenever there's no previous month/year to compare against.
+const firstMk = DATA.months[0];
+const firstBaseline = DATA.summary[firstMk];
+
+// Decide what the bottom-row growth % should compare against, given the current view:
+// specific month -> previous month, whole year -> previous year, no previous period -> the
+// very first data point on record.
+function growthInfo(curVal, momPct, firstVal, isYearMode) {
+  if (momPct !== null && momPct !== undefined && isFinite(momPct)) {
+    return { pct: momPct, label: isYearMode ? 'เทียบปีก่อน' : 'เทียบเดือนก่อน' };
+  }
+  const pct = firstVal ? (curVal - firstVal) / Math.abs(firstVal) * 100 : null;
+  return { pct, label: 'เทียบข้อมูลเริ่มต้น' };
+}
+
+function growthBadgeHtml(pct, goodIsUp, label) {
+  const b = badgeHtml(pct, goodIsUp);
+  const t = toneStyles[b.tone];
+  return {
+    wrapCls: 'inline-flex items-center gap-2 flex-wrap',
+    html: '<span class="text-sm font-bold px-3 py-1.5 rounded-full ' + t.pill + '">' + b.text + '</span>' +
+          '<span class="text-xs font-medium ' + t.label + '">' + label + '</span>'
+  };
+}
+
+function renderKpis(p) {
+  const s = p.summary;
+  const isYearMode = p.mode === 'year';
+
+  document.getElementById('kpiRevenue').textContent = fmtShort(s.revenue);
+  document.getElementById('kpiExpense').textContent = fmtShort(s.expense);
+  document.getElementById('kpiProfit').textContent = fmtShort(s.profit);
+  document.getElementById('kpiCum').textContent = fmtShort(s.cum_profit);
+
+  // Bottom info row: % growth vs. the previous month/year (or the starting data point when
+  // there's nothing before it), fills the empty space with real, period-specific context.
+  // (กำไรสะสม doesn't get a growth pill at all, per request.)
+  // In "ทั้งหมดทุกปี" mode there's no sensible previous period to compare against (it would
+  // just be a huge, meaningless number vs. a single starting month), so hide the pills.
+  const subEls = ['kpiRevenueSub','kpiExpenseSub','kpiProfitSub'].map(id => document.getElementById(id));
+  if (p.mode === 'all') {
+    subEls.forEach(el => { el.className = ''; el.innerHTML = ''; });
+    return;
+  }
+
+  const rg = growthInfo(s.revenue, s.rev_mom, firstBaseline.revenue, isYearMode);
+  const rSub = growthBadgeHtml(rg.pct, true, rg.label);
+  const rSubEl = document.getElementById('kpiRevenueSub'); rSubEl.className = rSub.wrapCls; rSubEl.innerHTML = rSub.html;
+
+  const eg = growthInfo(s.expense, s.exp_mom, firstBaseline.expense, isYearMode);
+  const eSub = growthBadgeHtml(eg.pct, false, eg.label);
+  const eSubEl = document.getElementById('kpiExpenseSub'); eSubEl.className = eSub.wrapCls; eSubEl.innerHTML = eSub.html;
+
+  const pg = growthInfo(s.profit, s.profit_mom, firstBaseline.profit, isYearMode);
+  const pSub = growthBadgeHtml(pg.pct, true, pg.label);
+  const pSubEl = document.getElementById('kpiProfitSub'); pSubEl.className = pSub.wrapCls; pSubEl.innerHTML = pSub.html;
+}
+
+function hexToRgb(hex){ hex=hex.replace('#',''); if(hex.length===3) hex=hex.split('').map(c=>c+c).join(''); const num=parseInt(hex,16); return {r:(num>>16)&255,g:(num>>8)&255,b:num&255}; }
+function rgbToHsl(r,g,b){ r/=255; g/=255; b/=255; const max=Math.max(r,g,b), min=Math.min(r,g,b); let h,s; const l=(max+min)/2;
+  if (max===min) { h=s=0; } else { const d=max-min; s = l>0.5 ? d/(2-max-min) : d/(max+min);
+    switch(max){ case r: h=(g-b)/d+(g<b?6:0); break; case g: h=(b-r)/d+2; break; default: h=(r-g)/d+4; } h/=6; }
+  return { h:h*360, s:s*100, l:l*100 }; }
+function hslToHex(h,s,l){ s/=100; l/=100;
+  const k = n => (n + h/30) % 12;
+  const a = s * Math.min(l, 1-l);
+  const f = n => l - a * Math.max(-1, Math.min(k(n)-3, Math.min(9-k(n), 1)));
+  const toHex = x => Math.round(255*x).toString(16).padStart(2,'0');
+  return '#'+toHex(f(0))+toHex(f(8))+toHex(f(4)); }
+// Adjusts lightness/saturation in HSL space (keeps hue pure, boosts saturation)
+// instead of blending toward white/black, which washes colors out.
+function vividShade(hex, lDelta, sBoost){
+  const {r,g,b} = hexToRgb(hex);
+  const {h,s,l} = rgbToHsl(r,g,b);
+  const ns = Math.min(100, s + (sBoost||0));
+  const nl = Math.min(92, Math.max(8, l + lDelta));
+  return hslToHex(h, ns, nl);
+}
+function arcGradient(ctx, area, hex){
+  const g = ctx.createLinearGradient(area.left, area.top, area.right, area.bottom);
+  g.addColorStop(0, vividShade(hex, 10, 8));
+  g.addColorStop(1, vividShade(hex, -8, 4));
+  return g;
+}
+function renderDonutAndBar(p) {
+  const s = p.summary;
+  const catData = DATA.cat_order.map(c => p.rev_cat[c] || 0);
+  const catTotal = catData.reduce((a,b)=>a+b,0);
+  if (donutChart) donutChart.destroy();
+  donutChart = new Chart(document.getElementById('categoryDonutChart').getContext('2d'), {
+    type: 'doughnut',
+    data: { labels: DATA.cat_order, datasets: [{
+      data: catData,
+      backgroundColor: (context) => {
+        const { chart, dataIndex } = context;
+        const { chartArea, ctx } = chart;
+        if (!chartArea) return catColors[DATA.cat_order[dataIndex]];
+        return arcGradient(ctx, chartArea, catColors[DATA.cat_order[dataIndex]]);
+      },
+      borderWidth: 3, borderColor: '#ffffff', borderRadius: 6, spacing: 3,
+      hoverOffset: 6, hoverBorderWidth: 3
+    }] },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'72%',
+      plugins: { legend: { display:false },
+        tooltip: { backgroundColor:'#1e293b', padding:12, cornerRadius:10, boxPadding:6,
+          callbacks: { label: (ctx) => { const v=ctx.parsed; const t=ctx.chart._metasets[ctx.datasetIndex].total; return ' ฿'+v.toLocaleString()+' ('+Math.round(v/t*100)+'%)'; } } } }
+    }
+  });
+  document.getElementById('donutCenterTotal').textContent = fmtShort(catTotal);
+
+  const legendWrap = document.getElementById('donutLegend'); legendWrap.innerHTML = '';
+  DATA.cat_order.forEach(c => {
+    const val = p.rev_cat[c]||0; const pct = catTotal? Math.round(val/catTotal*100):0;
+    const color = catColors[c];
+    const row = document.createElement('div');
+    row.className = 'flex items-center justify-between gap-2 rounded-xl px-2.5 py-1.5';
+    row.style.background = color + '14';
+    row.innerHTML =
+      '<span class="flex items-center gap-2 min-w-0">' +
+        '<span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:'+color+'"></span>' +
+        '<span class="truncate">'+c+'</span>' +
+      '</span>' +
+      '<span class="font-semibold shrink-0" style="color:'+color+'">'+pct+'%</span>';
+    legendWrap.appendChild(row);
+  });
+
+  document.getElementById('expenseTotalLabel').textContent = 'รวม ' + fmtNum(s.expense) + ' บาท';
+  if (barChart) barChart.destroy();
+  const sortedGroups = [...DATA.grp_order].sort((a,b)=>(p.exp_group[b]||0)-(p.exp_group[a]||0));
+  barChart = new Chart(document.getElementById('expensesBarChart').getContext('2d'), {
+    type: 'bar',
+    data: { labels: ['หมวดหมู่รายจ่าย'], datasets: sortedGroups.map(g => ({
+      label:g, data:[p.exp_group[g]||0], backgroundColor: grpColors[g]||'#94a3b8',
+      borderRadius: 5, borderSkipped: false, borderWidth: 2, borderColor: 'rgba(255,255,255,0.85)'
+    })) },
+    options: { responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      barThickness: 60,
+      plugins: { legend: { display:false },
+        tooltip: { backgroundColor:'#1e293b', padding:12, cornerRadius:10, boxPadding:6,
+          callbacks: { label:(ctx)=>' '+ctx.dataset.label+': ฿'+ctx.parsed.x.toLocaleString() } } },
+      scales: {
+        x:{ stacked:true, grid:{display:false, drawBorder:false}, border:{display:false},
+          ticks:{callback:(v)=>v/1000+'k', color:'#94a3b8', font:{size:11}} },
+        y:{ stacked:true, display:false, grid:{display:false, drawBorder:false} }
+      }
+    }
+  });
+
+  const expLegendWrap = document.getElementById('expenseLegend'); expLegendWrap.innerHTML = '';
+  sortedGroups.forEach(g => {
+    const amt = p.exp_group[g] || 0; if (amt <= 0) return;
+    const pct = s.expense ? Math.round(amt / s.expense * 100) : 0;
+    const color = grpColors[g] || '#94a3b8';
+    const row = document.createElement('div');
+    row.className = 'flex items-center justify-between gap-2 rounded-xl px-2.5 py-1.5';
+    row.style.background = color + '14';
+    row.innerHTML =
+      '<span class="flex items-center gap-2 min-w-0">' +
+        '<span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:'+color+'"></span>' +
+        '<span class="truncate">'+g+'</span>' +
+      '</span>' +
+      '<span class="font-semibold shrink-0" style="color:'+color+'">'+pct+'%</span>';
+    expLegendWrap.appendChild(row);
+  });
+}
+
+// For the "อื่นๆ" (misc) expense line, group the many one-off line items into a handful of
+// readable summary buckets (rather than listing raw item names) so the breakdown reads as
+// a quick summary, not a detailed ledger dump.
+const miscCategoryMap = {
+  'เบเกอรี่แห้งอเมซอน':'เครื่องดื่ม/เบเกอรี่สนับสนุน', 'เบเกอรี่สด':'เครื่องดื่ม/เบเกอรี่สนับสนุน',
+  'ค่าเครื่องดื่มสนับสนุน':'เครื่องดื่ม/เบเกอรี่สนับสนุน', 'ค่าเครื่องดื่มสนับสนุนออเดอร์เจ้าคาว':'เครื่องดื่ม/เบเกอรี่สนับสนุน',
+  'ออเดอร์เจ้าคาว':'เครื่องดื่ม/เบเกอรี่สนับสนุน', 'เจ้าคาว':'เครื่องดื่ม/เบเกอรี่สนับสนุน', 'สำรองค่ากาแฟ':'เครื่องดื่ม/เบเกอรี่สนับสนุน',
+  'วัดพลายชุมพล':'สนับสนุนวัด/ชุมชน', 'ค่าเครื่องดื่มถวายวัด':'สนับสนุนวัด/ชุมชน',
+  'ค่าอาหาร/สำรองคชจ./เครื่องดื่มพระ':'สนับสนุนวัด/ชุมชน', 'ค่าเครื่องดื่มรับรองพระ/พิมพ์/พี่ตี๊ะ/เจ้าคาว':'สนับสนุนวัด/ชุมชน',
+  'ค่าเครื่องดื่ม/คชจ.เจ้าคาว/เครื่องดื่มพระวัดพลาย':'สนับสนุนวัด/ชุมชน', 'สนับสนุนชมรมบีนัมเบอร์วัน':'สนับสนุนวัด/ชุมชน',
+  'สนับสนุนประกวดนางงามชมพู':'สนับสนุนวัด/ชุมชน',
+  'ค่าแอร์1ตัวพร้อมค่าติดตั้ง':'ซ่อมบำรุง/อุปกรณ์', 'กล้องวงจรปิดพูดได้ 4 ตัว':'ซ่อมบำรุง/อุปกรณ์',
+  'ค่ากำจัดแมลง1ปี':'ซ่อมบำรุง/อุปกรณ์', 'เดินระบบน้ำประปา':'ซ่อมบำรุง/อุปกรณ์', 'ค่าถังปั๊มน้ำ+ค่าแรงติดตั้ง':'ซ่อมบำรุง/อุปกรณ์',
+  'ค่าล้างแอร์':'ซ่อมบำรุง/อุปกรณ์', 'ซื้อจักรยาน1คัน':'ซ่อมบำรุง/อุปกรณ์', 'ซ่อมตู้แช่':'ซ่อมบำรุง/อุปกรณ์', 'ค่าทำ PM เครื่องกาแฟ':'ซ่อมบำรุง/อุปกรณ์',
+  'รางวัลยอดขายชาไทยพรีเมี่ยม':'รางวัล/กิจกรรมพนักงาน', 'รางวัลคะแนนออดิตเต็ม':'รางวัล/กิจกรรมพนักงาน',
+  'คะแนนออดิต':'รางวัล/กิจกรรมพนักงาน', 'ค่าอบรมบาริสต้า':'รางวัล/กิจกรรมพนักงาน', 'ค่าของขวัญจับฉลากพนักงาน':'รางวัล/กิจกรรมพนักงาน',
+  'ค่าประกันอัคคีภัย':'ประกันภัย', 'ประกันอัคคีภัย':'ประกันภัย',
+  'ค่าตั๋วเครื่องบิน':'เดินทาง/เบ็ดเตล็ด', 'ค่าเดินทาง':'เดินทาง/เบ็ดเตล็ด',
+  'ค่าอาหาร/ค่าเดินทางพนักงาน/เครื่องดื่มพระ':'เดินทาง/เบ็ดเตล็ด', 'ค่าอาหาร/เครื่องดื่ม/เบ็ดเตล็ด':'เดินทาง/เบ็ดเตล็ด',
+  'ค่าอาหาร/เครื่องดื่ม':'เดินทาง/เบ็ดเตล็ด', 'สำรอง คชจ.คุณขวัญดาว':'เดินทาง/เบ็ดเตล็ด', 'คชจ.เบ็ดเตล็ด':'เดินทาง/เบ็ดเตล็ด',
+  'เทสเมนูเครื่องดื่ม':'เดินทาง/เบ็ดเตล็ด', 'ซื้อดอกไม้':'เดินทาง/เบ็ดเตล็ด',
+  'ค่าโอนเงิน':'ธนาคาร/เอกสาร', 'ค่าโอนเงิน/ค่าขนส่ง/ค่าส่งเอกสาร':'ธนาคาร/เอกสาร', 'ค่าโอนเงิน/ค่าส่งเอกสาร':'ธนาคาร/เอกสาร',
+  'ค่าโอนเงิน/ค่าเคลือบเอกสาร':'ธนาคาร/เอกสาร', 'ค่าโอนเงิน/ส่งเอกสาร':'ธนาคาร/เอกสาร', 'ค่าส่งเอกสาร':'ธนาคาร/เอกสาร',
+  'ค่าส่งเอกสาร/ป้ายทิ้งขยะ':'ธนาคาร/เอกสาร', 'ค่าส่งเอกสาร/โอนเงิน':'ธนาคาร/เอกสาร',
+  'ภาษีสถานที่สะสมอาหาร':'ภาษี/ใบอนุญาต', 'ค่าหนังสือรับรองสถานที่สะสมอาหาร':'ภาษี/ใบอนุญาต'
+};
+// Surface the biggest summary buckets behind the "อื่นๆ" total so the number isn't a black
+// box — summed across whichever months are in view, grouped (not itemized) for readability.
+function topMiscItems(months, topN) {
+  const totals = {};
+  (months||[]).forEach(mk => {
+    const items = DATA.misc_items && DATA.misc_items[mk];
+    if (!items) return;
+    Object.keys(items).forEach(name => {
+      const cat = miscCategoryMap[name] || 'อื่นๆ เบ็ดเตล็ด';
+      totals[cat] = (totals[cat]||0) + items[name];
+    });
+  });
+  return Object.entries(totals).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0, topN||3).map(([name])=>name);
+}
+
+function renderPL(p) {
+  const s = p.summary;
+  document.getElementById('tableMonthLabel').textContent = p.label;
+  const cogs = p.exp_group['ต้นทุนวัตถุดิบ/สินค้า'] || 0;
+  const gross = s.revenue - cogs;
+  const rev = s.revenue;
+  const rows = [];
+  rows.push({label:'รวมรายรับ', amt:rev, pct:100, cls:'font-bold text-slate-900', row:'border-b border-slate-100 hover:bg-slate-50/60 transition-colors', amtCls:'font-bold text-slate-900', pctCls:'text-slate-700'});
+  rows.push({label:'หัก: ต้นทุนวัตถุดิบและสินค้า', amt:cogs, pct: rev?cogs/rev*100:0, cls:'pl-8 text-slate-800', row:'border-b border-slate-100 hover:bg-slate-50/60 transition-colors'});
+  rows.push({label:'กำไรขั้นต้น', amt:gross, pct: rev?gross/rev*100:0, cls:'font-semibold text-blue-900', row:'border-b border-slate-100 bg-blue-50/50 hover:bg-blue-50/80 transition-colors', amtCls:'font-bold text-blue-800', pctCls:'text-blue-700 font-medium'});
+  const otherGroups = DATA.grp_order.filter(g=>g!=='ต้นทุนวัตถุดิบ/สินค้า').sort((a,b)=>(p.exp_group[b]||0)-(p.exp_group[a]||0));
+  otherGroups.forEach(g => {
+    const amt = p.exp_group[g]||0; if (amt<=0) return;
+    let label = g;
+    if (g === 'อื่นๆ') {
+      const top = topMiscItems(p.months, 2);
+      if (top.length) label = g + ' (' + top.join(', ') + ')';
+    }
+    rows.push({label, amt, pct: rev?amt/rev*100:0, cls:'pl-8 text-slate-800', row:'border-b border-slate-50 hover:bg-slate-50/60 transition-colors', amtCls:'text-slate-900', pctCls:'text-slate-700'});
+  });
+  const isLoss = s.profit < 0;
+  const totalTone = isLoss ? 'rose' : 'emerald';
+  rows.push({label: isLoss?'ขาดทุนสุทธิ':'กำไรสุทธิ', amt:s.profit, pct: rev?s.profit/rev*100:0,
+    cls:'font-bold text-base tracking-tight '+(isLoss?'text-rose-700':'text-emerald-700'),
+    amtCls:'font-extrabold text-base tracking-tight '+(isLoss?'text-rose-700':'text-emerald-700'),
+    pctCls:(isLoss?'text-rose-600':'text-emerald-600'), isTotal:true, isLoss});
+
+  const tbody = document.getElementById('plTableBody'); tbody.innerHTML = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    const amtDisplay = r.amt < 0 ? '(' + fmtNum(Math.abs(r.amt)) + ')' : fmtNum(r.amt);
+    if (r.isTotal) {
+      const glassBg = r.isLoss ? 'rgba(254,242,242,0.5)' : 'rgba(236,253,245,0.5)';
+      const glassStyle = `background:${glassBg}; backdrop-filter:blur(14px) saturate(160%); -webkit-backdrop-filter:blur(14px) saturate(160%); border-top:1px solid rgba(255,255,255,0.65); border-bottom:1px solid rgba(255,255,255,0.65);`;
+      tr.innerHTML = `<td class="py-3.5 pl-4 pr-4 rounded-l-2xl ${r.cls}" style="${glassStyle} border-left:1px solid rgba(255,255,255,0.65);">${r.label}</td>
+        <td class="py-3.5 pr-4 text-right ${r.amtCls}" style="${glassStyle}">${amtDisplay}</td>
+        <td class="py-3.5 pr-4 rounded-r-2xl text-right ${r.pctCls}" style="${glassStyle} border-right:1px solid rgba(255,255,255,0.65);">${r.pct.toFixed(1)}%</td>`;
+    } else {
+      tr.className = r.row;
+      tr.innerHTML = `<td class="py-2.5 pr-4 ${r.cls}">${r.label}</td>
+        <td class="py-2.5 pr-4 text-right ${r.amtCls||r.cls}">${amtDisplay}</td>
+        <td class="py-2.5 pr-4 text-right ${r.pctCls||'text-slate-700'}">${r.pct.toFixed(1)}%</td>`;
+    }
+    tbody.appendChild(tr);
+  });
+}
+
+function render(key) {
+  const p = getPeriod(key);
+  renderKpis(p);
+  renderDonutAndBar(p);
+  renderPL(p);
+}
+
+const thaiMonthAbbr = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+function shortMonthLabel(mk) {
+  const [y, m] = mk.split('-').map(Number);
+  const beYear = (y + 543) % 100;
+  return thaiMonthAbbr[m-1] + ' ' + String(beYear).padStart(2,'0');
+}
+
+// Dashed reference line at y=0 so the profit line's positive/negative months read clearly.
+const zeroLinePlugin = {
+  id: 'zeroLine',
+  beforeDatasetsDraw(chart) {
+    const { ctx, chartArea, scales } = chart;
+    if (!chartArea || !scales.y) return;
+    const y0 = scales.y.getPixelForValue(0);
+    if (y0 < chartArea.top || y0 > chartArea.bottom) return;
+    ctx.save();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(148,163,184,0.55)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(chartArea.left, y0);
+    ctx.lineTo(chartArea.right, y0);
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+// Soft drop-shadow glow behind the profit line only (dataset index 1).
+const lineGlowPlugin = {
+  id: 'lineGlow',
+  beforeDatasetDraw(chart, args) {
+    if (args.index !== 1) return;
+    const { ctx } = chart;
+    ctx.save();
+    ctx.shadowColor = 'rgba(5,150,105,0.35)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetY = 3;
+  },
+  afterDatasetDraw(chart, args) {
+    if (args.index !== 1) return;
+    chart.ctx.restore();
+  }
+};
+
+function renderCashFlow() {
+  const range = parseInt(document.getElementById('rangeSelect').value, 10);
+  // พ.ย. 67 (2024-11) is excluded from this chart per request (it's the store's opening
+  // month with an atypical one-off loss that skews the trend line).
+  const monthsSlice = DATA.months.slice(-range).filter(mk => mk !== '2024-11');
+  const labelsSlice = monthsSlice.map(mk => shortMonthLabel(mk));
+  const revenueData = monthsSlice.map(mk => DATA.summary[mk].revenue);
+  const profitData = monthsSlice.map(mk => DATA.summary[mk].profit);
+
+  if (cashFlowChart) cashFlowChart.destroy();
+  const canvas = document.getElementById('cashFlowChart');
+  const ctx = canvas.getContext('2d');
+  const chartH = canvas.parentElement.clientHeight || 280;
+
+  const barGradient = ctx.createLinearGradient(0, 0, 0, chartH);
+  barGradient.addColorStop(0, 'rgba(59,130,246,0.85)');
+  barGradient.addColorStop(1, 'rgba(96,165,250,0.35)');
+
+  const barHoverGradient = ctx.createLinearGradient(0, 0, 0, chartH);
+  barHoverGradient.addColorStop(0, 'rgba(37,99,235,0.95)');
+  barHoverGradient.addColorStop(1, 'rgba(59,130,246,0.55)');
+
+  const lineFill = ctx.createLinearGradient(0, 0, 0, chartH);
+  lineFill.addColorStop(0, 'rgba(5,150,105,0.32)');
+  lineFill.addColorStop(0.55, 'rgba(5,150,105,0.08)');
+  lineFill.addColorStop(1, 'rgba(5,150,105,0.0)');
+
+  const lineStroke = ctx.createLinearGradient(0, 0, canvas.clientWidth || 700, 0);
+  lineStroke.addColorStop(0, '#0d9488');
+  lineStroke.addColorStop(0.5, '#059669');
+  lineStroke.addColorStop(1, '#10b981');
+
+  cashFlowChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: labelsSlice, datasets: [
+      {
+        type: 'bar',
+        label: 'รายรับ', data: revenueData,
+        backgroundColor: barGradient,
+        hoverBackgroundColor: barHoverGradient,
+        borderRadius: { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 },
+        borderSkipped: false,
+        maxBarThickness: 26,
+        categoryPercentage: 0.65, barPercentage: 0.9,
+        order: 2
+      },
+      {
+        type: 'line',
+        label: 'กำไร/ขาดทุนสุทธิ', data: profitData,
+        borderColor: lineStroke, backgroundColor: lineFill, fill: true,
+        borderWidth: 3.5, tension: 0.42, cubicInterpolationMode: 'monotone',
+        pointBackgroundColor: '#ffffff', pointBorderColor: '#059669', pointBorderWidth: 2.5,
+        pointRadius: 3.5, pointHoverRadius: 7.5, pointHoverBorderWidth: 3,
+        pointHoverBackgroundColor: '#059669', pointHoverBorderColor: '#ffffff',
+        order: 1
+      }
+    ]},
+    plugins: [zeroLinePlugin, lineGlowPlugin],
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode:'index', intersect:false },
+      onClick: (evt, els) => { if (els.length) { const mk = monthsSlice[els[0].index]; selectMonth(mk); } },
+      onHover: (evt, els) => { evt.native.target.style.cursor = els.length ? 'pointer' : 'default'; },
+      plugins: {
+        legend: {
+          display:true, position:'top', align:'end',
+          labels:{ usePointStyle:true, pointStyle:'circle', boxWidth:8, boxHeight:8, padding:16,
+            font:{size:12, weight:'600'}, color:'#475569' }
+        },
+        tooltip: {
+          backgroundColor:'#1e293b', titleColor:'#f8fafc', bodyColor:'#e2e8f0',
+          padding:12, cornerRadius:10, boxPadding:6, displayColors:true,
+          borderColor:'rgba(255,255,255,0.1)', borderWidth:1,
+          callbacks: { label:(ctx)=>' '+ctx.dataset.label+': ฿'+ctx.parsed.y.toLocaleString() }
+        }
+      },
+      scales: {
+        x: { grid: { display:false, drawBorder:false }, ticks: { maxRotation:0, minRotation:0, autoSkip:true, font:{size:11}, color:'#94a3b8' } },
+        y: { grid: { color:'#f1f5f9', drawBorder:false, drawTicks:false },
+          border: { display:false },
+          ticks: { callback:(v)=>v/1000+'k', color:'#94a3b8', padding:8, font:{size:11} } }
+      }
+    }
+  });
+}
+
+// Selecting a year (or "ทั้งหมดทุกปี") repopulates the month dropdown for that scope and
+// defaults to the whole-scope total.
+yearSelect.addEventListener('change', () => {
+  if (yearSelect.value === 'ALL') {
+    populateMonthSelect('ALL');
+    monthSelect.value = 'ALL';
+    render('ALL');
+    return;
+  }
+  const year = Number(yearSelect.value.slice(2));
+  populateMonthSelect(year);
+  monthSelect.value = 'Y-' + year;
+  render(monthSelect.value);
+});
+monthSelect.addEventListener('change', () => render(monthSelect.value));
+document.getElementById('rangeSelect').addEventListener('change', renderCashFlow);
+
+// Used by the Cash Flow chart's onClick: jump both dropdowns to the clicked month
+function selectMonth(mk) {
+  const year = beYearOf(mk);
+  yearSelect.value = 'Y-' + year;
+  populateMonthSelect(year);
+  monthSelect.value = mk;
+  render(mk);
+}
+
+renderCashFlow();
+render(latestMk);
+</script>
+</body>
+</html>
