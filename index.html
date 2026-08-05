@@ -95,28 +95,28 @@
   <main class="flex-1 md:ml-64 min-h-screen">
 
     <!-- Header -->
-    <header class="sticky top-0 z-10 header-glass px-6 lg:px-10 py-5 flex flex-wrap items-center justify-between gap-4">
+    <header class="sticky top-0 z-10 header-glass px-4 sm:px-6 lg:px-10 py-3 sm:py-5 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
       <div>
-        <p class="text-[11px] font-bold text-blue-500 tracking-[0.15em] uppercase mb-1">ประสิทธิภาพในการทำกำไรของสาขา</p>
-        <h1 class="text-3xl lg:text-4xl font-bold text-slate-800">แดชบอร์ดการเงิน <span class="text-blue-600">สาขาวัดโพธิ์</span></h1>
+        <p class="text-[9px] sm:text-[11px] font-bold text-blue-500 tracking-[0.1em] sm:tracking-[0.15em] uppercase mb-0.5 sm:mb-1">ประสิทธิภาพในการทำกำไรของสาขา</p>
+        <h1 class="text-xl sm:text-3xl lg:text-4xl font-bold text-slate-800 leading-tight">แดชบอร์ดการเงิน <span class="text-blue-600">สาขาวัดโพธิ์</span></h1>
       </div>
 
-      <div class="flex items-center gap-3 flex-wrap">
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
         <!-- Year select -->
         <div class="relative">
-          <i class="fa-solid fa-calendar-days text-blue-500 text-xs absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-          <select id="yearSelect" class="select-pill appearance-none text-blue-800 font-semibold text-base rounded-full pl-9 pr-9 py-2.5 outline-none cursor-pointer"></select>
-          <i class="fa-solid fa-chevron-down text-blue-500 text-xs absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <i class="fa-solid fa-calendar-days text-blue-500 text-[10px] sm:text-xs absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <select id="yearSelect" class="select-pill appearance-none text-blue-800 font-semibold text-sm sm:text-base rounded-full pl-7 sm:pl-9 pr-7 sm:pr-9 py-1.5 sm:py-2.5 outline-none cursor-pointer"></select>
+          <i class="fa-solid fa-chevron-down text-blue-500 text-[10px] sm:text-xs absolute right-2.5 sm:right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
         </div>
 
         <!-- Month-within-year select (first option = whole year) -->
         <div class="relative">
-          <i class="fa-solid fa-calendar-week text-blue-500 text-xs absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-          <select id="monthSelect" class="select-pill appearance-none text-blue-800 font-semibold text-base rounded-full pl-9 pr-9 py-2.5 outline-none cursor-pointer"></select>
-          <i class="fa-solid fa-chevron-down text-blue-500 text-xs absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <i class="fa-solid fa-calendar-week text-blue-500 text-[10px] sm:text-xs absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          <select id="monthSelect" class="select-pill appearance-none text-blue-800 font-semibold text-sm sm:text-base rounded-full pl-7 sm:pl-9 pr-7 sm:pr-9 py-1.5 sm:py-2.5 outline-none cursor-pointer"></select>
+          <i class="fa-solid fa-chevron-down text-blue-500 text-[10px] sm:text-xs absolute right-2.5 sm:right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
         </div>
 
-        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-600 via-blue-500 to-blue-400 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-blue-500/30 ring-2 ring-white/70">CN</div>
+        <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-indigo-600 via-blue-500 to-blue-400 flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-md shadow-blue-500/30 ring-2 ring-white/70">CN</div>
       </div>
     </header>
 
