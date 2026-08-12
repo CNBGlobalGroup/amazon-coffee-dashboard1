@@ -22,6 +22,12 @@
      below it and cut off content on the right. Clipping overflow at the root stops that from
      ever cascading, while each row is still properly fixed with min-w-0/truncate below. */
   body { font-family: 'Inter','Noto Sans Thai', sans-serif; overflow-x: hidden; max-width: 100vw; }
+  /* iOS Safari (and in-app WebViews like Messenger's) auto-zooms the whole page when a
+     <select>/<input> smaller than 16px is focused, and that zoom persists as you navigate to
+     other tabs — this is what actually caused the "everything shifted right, can't see the
+     full width" symptom, not a layout overflow. Several selects here use text-sm/text-xs
+     (14px/12px) on mobile, so force 16px on all of them regardless of that utility class. */
+  select { font-size: 16px !important; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(var(--brand-rgb),0.45); border-radius: 10px; }
