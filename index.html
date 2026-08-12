@@ -16,8 +16,12 @@
     --brand-700:#1d4ed8; --brand-800:#1e40af; --brand-900:#1e3a8a; --brand-rgb:59,130,246;
     --brand-grad-from:#3b82f6; --brand-grad-via:#6366f1; --brand-grad-to:#7c3aed;
   }
-  html { scroll-behavior: smooth; }
-  body { font-family: 'Inter','Noto Sans Thai', sans-serif; }
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+  /* Safety net: on narrow phones, any single element that's a hair too wide (e.g. the 3-tab
+     pill row) used to make the WHOLE page horizontally scrollable, which shifted every row
+     below it and cut off content on the right. Clipping overflow at the root stops that from
+     ever cascading, while each row is still properly fixed with min-w-0/truncate below. */
+  body { font-family: 'Inter','Noto Sans Thai', sans-serif; overflow-x: hidden; max-width: 100vw; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(var(--brand-rgb),0.45); border-radius: 10px; }
@@ -114,15 +118,15 @@
     <!-- Header -->
     <header class="sticky top-0 z-10 header-glass px-4 sm:px-6 lg:px-10 py-3 sm:py-5 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
       <!-- Page switcher: on mobile the sidebar is hidden, so surface it here as its own row -->
-      <div class="w-full md:hidden flex gap-2">
-        <button type="button" id="navDashboardBtnMobile" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-full bg-white shadow-sm text-slate-900 font-semibold text-xs transition-colors">
-          <i class="fa-solid fa-grip text-[var(--brand-600)]"></i> แดชบอร์ด
+      <div class="w-full md:hidden flex gap-1.5">
+        <button type="button" id="navDashboardBtnMobile" class="flex-1 min-w-0 flex items-center justify-center gap-1 px-1.5 py-2 rounded-full bg-white shadow-sm text-slate-900 font-semibold text-[11px] transition-colors">
+          <i class="fa-solid fa-grip text-[var(--brand-600)] shrink-0"></i><span class="truncate">แดชบอร์ด</span>
         </button>
-        <button type="button" id="navHealthBtnMobile" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-full text-slate-500 bg-white/40 font-semibold text-xs transition-colors">
-          <i class="fa-solid fa-heart-pulse text-slate-400"></i> สุขภาพ
+        <button type="button" id="navHealthBtnMobile" class="flex-1 min-w-0 flex items-center justify-center gap-1 px-1.5 py-2 rounded-full text-slate-500 bg-white/40 font-semibold text-[11px] transition-colors">
+          <i class="fa-solid fa-heart-pulse text-slate-400 shrink-0"></i><span class="truncate">สุขภาพ</span>
         </button>
-        <button type="button" id="navAnalysisBtnMobile" class="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-full text-slate-500 bg-white/40 font-semibold text-xs transition-colors">
-          <i class="fa-solid fa-chart-column text-slate-400"></i> วิเคราะห์
+        <button type="button" id="navAnalysisBtnMobile" class="flex-1 min-w-0 flex items-center justify-center gap-1 px-1.5 py-2 rounded-full text-slate-500 bg-white/40 font-semibold text-[11px] transition-colors">
+          <i class="fa-solid fa-chart-column text-slate-400 shrink-0"></i><span class="truncate">วิเคราะห์</span>
         </button>
       </div>
 
@@ -778,8 +782,16 @@ function switchBranch(key) {
   const healthBody = document.getElementById('healthBody');
 
   if (!CTX.hasData) {
-    dashboardContent.classList.add('hidden');
-    emptyState.classList.remove('hidden');
+    // Only touch the dashboard page's own visibility (dashboardContent/emptyState) when the
+    // dashboard page is actually the active page. These two are top-level siblings of
+    // analysisContent/healthContent, and switchPage() is the sole authority over which of
+    // those siblings is shown - switchBranch() must not clobber that while the user is on
+    // the Analysis or Health page (see healthBody/healthEmptyState below, which are safe to
+    // always update since they're nested inside healthContent and stay hidden with it).
+    if (typeof currentPage === 'undefined' || currentPage === 'dashboard') {
+      dashboardContent.classList.add('hidden');
+      emptyState.classList.remove('hidden');
+    }
     document.getElementById('emptyStateBranchName').textContent = branch.name;
     healthBody.classList.add('hidden');
     healthEmptyState.classList.remove('hidden');
@@ -792,8 +804,10 @@ function switchBranch(key) {
     return;
   }
 
-  dashboardContent.classList.remove('hidden');
-  emptyState.classList.add('hidden');
+  if (typeof currentPage === 'undefined' || currentPage === 'dashboard') {
+    dashboardContent.classList.remove('hidden');
+    emptyState.classList.add('hidden');
+  }
   healthBody.classList.remove('hidden');
   healthEmptyState.classList.add('hidden');
   rangeLabel.textContent = 'ข้อมูล ' + CTX.months.length + ' เดือน (' + CTX.summary[CTX.firstMk].label + ' - ' + CTX.summary[CTX.latestMk].label + ')';
