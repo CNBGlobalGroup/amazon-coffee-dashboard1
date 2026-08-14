@@ -417,8 +417,10 @@
     </div>
 
     <!-- Health page: financial health checkup for whichever branch is currently selected
-         (via the same sidebar/mobile branch selector and year/month period the dashboard
-         uses) — a single-branch deep dive, not a cross-branch comparison. -->
+         (via the same sidebar/mobile branch selector the dashboard uses) — a single-branch
+         deep dive, not a cross-branch comparison. Evaluated per year, except the current
+         year which breaks down per quarter (its own selector below, not the dashboard's
+         month-level yearSelect/monthSelect). -->
     <div id="healthContent" class="hidden p-4 sm:p-6 lg:p-10 space-y-4 sm:space-y-6">
 
       <!-- Empty state: shown when the selected branch has no data yet -->
@@ -433,6 +435,25 @@
       </div>
 
       <div id="healthBody" class="space-y-4 sm:space-y-6">
+        <!-- Period selector: evaluation is per-year; the current year additionally breaks
+             down into quarters (since it's not finished yet, a single whole-year score would
+             blend in months that haven't happened, diluting how the branch is doing lately). -->
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <p class="text-xs sm:text-sm text-slate-500 max-w-md">ประเมินสุขภาพเป็นรายปี และประเมินเป็นรายไตรมาสสำหรับปีปัจจุบัน</p>
+          <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <div class="relative">
+              <i class="fa-solid fa-calendar-days text-slate-400 text-[10px] sm:text-xs absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <select id="healthYearSelect" class="select-pill appearance-none text-slate-700 font-semibold text-sm sm:text-base rounded-full pl-7 sm:pl-9 pr-7 sm:pr-9 py-1.5 sm:py-2.5 outline-none cursor-pointer"></select>
+              <i class="fa-solid fa-chevron-down text-slate-400 text-[10px] sm:text-xs absolute right-2.5 sm:right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            </div>
+            <div id="healthQuarterWrap" class="relative hidden">
+              <i class="fa-solid fa-calendar-week text-slate-400 text-[10px] sm:text-xs absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <select id="healthQuarterSelect" class="select-pill appearance-none text-slate-700 font-semibold text-sm sm:text-base rounded-full pl-7 sm:pl-9 pr-7 sm:pr-9 py-1.5 sm:py-2.5 outline-none cursor-pointer"></select>
+              <i class="fa-solid fa-chevron-down text-slate-400 text-[10px] sm:text-xs absolute right-2.5 sm:right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            </div>
+          </div>
+        </div>
+
         <!-- Score summary for the currently selected branch + period -->
         <div class="card rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-8">
           <div class="relative w-28 h-28 sm:w-36 sm:h-36 shrink-0" id="healthGaugeWrap">
@@ -849,7 +870,7 @@ function switchBranch(key) {
 
   render(CTX.latestMk);
   renderCashFlow();
-  if (typeof currentPage !== 'undefined' && currentPage === 'health') renderHealth();
+  if (typeof currentPage !== 'undefined' && currentPage === 'health') { populateHealthPeriodSelectors(); renderHealth(); }
 }
 branchSelect.addEventListener('change', () => switchBranch(branchSelect.value));
 branchSelectMobile.addEventListener('change', () => switchBranch(branchSelectMobile.value));
@@ -1349,7 +1370,6 @@ function renderCashFlow() {
 // view, renderHealth() for the branch health checkup — since both are driven by this same
 // shared year/month period control.
 function renderCurrentPeriodView(periodVal) {
-  if (currentPage === 'health') { renderHealth(); return; }
   render(periodVal);
 }
 yearSelect.addEventListener('change', () => {
@@ -1673,9 +1693,9 @@ analysisMonthSelect.addEventListener('change', renderAnalysis);
 // Scoring model (transparent, linear, no hidden weights), 4 dimensions × 25 points = 100:
 //   1. ความสามารถทำกำไร (Profitability) — from profit margin % over the period.
 //      score = clamp(margin% + 10, 0, 25)  →  margin -10% or worse = 0, margin 15%+ = 25 (capped)
-//   2. การเติบโต (Growth) — revenue growth vs. the prior comparable period (month-over-month
-//      for a single month, year-over-year for a whole year, first-half-vs-second-half trend
-//      for "ทั้งหมด"). score = clamp((growth% + 20) / 40 * 25, 0, 25)  →  0% growth = 12.5 (neutral)
+//   2. การเติบโต (Growth) — revenue growth vs. the prior comparable period (year-over-year
+//      for a whole year, quarter-over-previous-quarter for a quarter, first-half-vs-second-half
+//      trend for "ทั้งหมด"). score = clamp((growth% + 20) / 40 * 25, 0, 25)  →  0% growth = 12.5 (neutral)
 //   3. ควบคุมต้นทุน (Cost control) — COGS ("ต้นทุนวัตถุดิบ/สินค้า") as % of revenue.
 //      score = clamp(45 - COGS%, 0, 25)  →  COGS 20% or better = 25 (capped), COGS 45%+ = 0
 //   4. เสถียรภาพ (Stability) — % of months in scope that were profitable.
@@ -1696,6 +1716,21 @@ function healthBandFor(score) {
 }
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
+// Quarter helpers for the Health page's year/quarter period selector. Quarters are keyed as
+// 'Q-<ceYear>-<q>' (e.g. 'Q-2026-3' = Jul-Sep 2026), independent of the branch/year selects
+// used elsewhere so the Analysis/Dashboard month-level controls stay untouched.
+const HEALTH_QUARTER_LABELS = ['ไตรมาส 1 (ม.ค.-มี.ค.)', 'ไตรมาส 2 (เม.ย.-มิ.ย.)', 'ไตรมาส 3 (ก.ค.-ก.ย.)', 'ไตรมาส 4 (ต.ค.-ธ.ค.)'];
+function currentBeYear() { return new Date().getFullYear() + 543; }
+// Only the months that actually exist in this branch's data are returned, so a quarter
+// that's only partially reported so far (e.g. just July so far in Q3) still evaluates on
+// whatever real months it has, rather than erroring or assuming zeros.
+function quarterMonthsFor(ctx, ceYear, q) {
+  const startM = (q - 1) * 3 + 1;
+  return [startM, startM + 1, startM + 2]
+    .map(m => ceYear + '-' + String(m).padStart(2, '0'))
+    .filter(mk => ctx.months.includes(mk));
+}
+
 // Pulls the raw figures a health score is computed from, for one branch at the currently
 // selected period. Returns null if the branch has no data in that period at all.
 function healthRawDataForBranch(ctx, periodVal) {
@@ -1704,6 +1739,14 @@ function healthRawDataForBranch(ctx, periodVal) {
     monthsInScope = ctx.months;
     revenue = ctx.allAgg.revenue; expense = ctx.allAgg.expense; profit = ctx.allAgg.profit;
     label = ctx.allAgg.label;
+  } else if (periodVal.startsWith('Q-')) {
+    const [, ceYearStr, qStr] = periodVal.split('-');
+    const ceYear = Number(ceYearStr), q = Number(qStr);
+    monthsInScope = quarterMonthsFor(ctx, ceYear, q);
+    if (!monthsInScope.length) return null;
+    revenue = 0; expense = 0; profit = 0;
+    monthsInScope.forEach(mk => { const s = ctx.summary[mk]; revenue += s.revenue; expense += s.expense; profit += s.profit; });
+    label = HEALTH_QUARTER_LABELS[q - 1].split(' (')[0] + ' ปี ' + (ceYear + 543);
   } else if (periodVal.startsWith('Y-')) {
     const y = Number(periodVal.slice(2));
     const ya = ctx.yearAgg[y];
@@ -1719,7 +1762,8 @@ function healthRawDataForBranch(ctx, periodVal) {
   if (!monthsInScope.length) return null;
 
   // Growth %: month-over-month for a single month, year-over-year for a whole year (both
-  // already computed by buildBranchContext), first-half-vs-second-half trend for "ทั้งหมด".
+  // already computed by buildBranchContext), quarter-over-previous-quarter for a quarter,
+  // first-half-vs-second-half trend for "ทั้งหมด".
   let growthPct = null;
   if (periodVal === 'ALL') {
     if (monthsInScope.length >= 2) {
@@ -1728,6 +1772,16 @@ function healthRawDataForBranch(ctx, periodVal) {
       const avg = (mks) => mks.reduce((s, mk) => s + ctx.summary[mk].revenue, 0) / mks.length;
       const firstAvg = avg(firstHalf), secondAvg = avg(secondHalf);
       growthPct = firstAvg ? (secondAvg - firstAvg) / firstAvg * 100 : null;
+    }
+  } else if (periodVal.startsWith('Q-')) {
+    const [, ceYearStr, qStr] = periodVal.split('-');
+    const ceYear = Number(ceYearStr), q = Number(qStr);
+    const prevQ = q === 1 ? 4 : q - 1;
+    const prevYear = q === 1 ? ceYear - 1 : ceYear;
+    const prevMonths = quarterMonthsFor(ctx, prevYear, prevQ);
+    if (prevMonths.length) {
+      const prevRevenue = prevMonths.reduce((s, mk) => s + ctx.summary[mk].revenue, 0);
+      growthPct = prevRevenue ? (revenue - prevRevenue) / prevRevenue * 100 : null;
     }
   } else if (periodVal.startsWith('Y-')) {
     growthPct = ctx.yearAgg[Number(periodVal.slice(2))].rev_mom;
@@ -1764,14 +1818,64 @@ const HEALTH_DIMENSION_META = [
   { key: 'stabilityScore', label: 'เสถียรภาพ' }
 ];
 
+// Health's own period selector: a year dropdown, plus a quarter dropdown that only appears
+// (and only applies) when the selected year is the current year — past years show one
+// whole-year score, the year still in progress shows quarter-by-quarter instead so recent
+// performance isn't diluted by averaging in months that haven't happened yet.
+const healthYearSelect = document.getElementById('healthYearSelect');
+const healthQuarterSelect = document.getElementById('healthQuarterSelect');
+const healthQuarterWrap = document.getElementById('healthQuarterWrap');
+function populateHealthQuarterSelect(ceYear) {
+  healthQuarterSelect.innerHTML = '';
+  let lastValue = null;
+  for (let q = 1; q <= 4; q++) {
+    if (!quarterMonthsFor(CTX, ceYear, q).length) continue;
+    const opt = document.createElement('option');
+    opt.value = 'Q-' + ceYear + '-' + q;
+    opt.textContent = HEALTH_QUARTER_LABELS[q - 1];
+    healthQuarterSelect.appendChild(opt);
+    lastValue = opt.value;
+  }
+  if (lastValue) healthQuarterSelect.value = lastValue;
+}
+function updateHealthQuarterVisibility() {
+  const y = Number(healthYearSelect.value.slice(2));
+  if (y === currentBeYear()) {
+    populateHealthQuarterSelect(y - 543);
+    healthQuarterWrap.classList.remove('hidden');
+  } else {
+    healthQuarterWrap.classList.add('hidden');
+  }
+}
+// Repopulates the year dropdown for whichever branch is now selected (years differ per
+// branch), defaulting to that branch's most recent year. Called on branch switch and when
+// the Health page becomes active.
+function populateHealthPeriodSelectors() {
+  if (!CTX || !CTX.hasData) return;
+  healthYearSelect.innerHTML = '';
+  [...CTX.yearsList].reverse().forEach(y => {
+    const opt = document.createElement('option');
+    opt.value = 'Y-' + y; opt.textContent = 'ปี ' + y;
+    healthYearSelect.appendChild(opt);
+  });
+  healthYearSelect.value = 'Y-' + CTX.latestYear;
+  updateHealthQuarterVisibility();
+}
+healthYearSelect.addEventListener('change', () => { updateHealthQuarterVisibility(); renderHealth(); });
+healthQuarterSelect.addEventListener('change', renderHealth);
+
 // Renders the health checkup for the currently selected branch (CTX) at the currently
-// selected period (monthSelect.value — the same shared control the dashboard page uses).
-// No-ops gracefully if the branch has no data (handled by switchPage/switchBranch showing
-// #healthEmptyState instead of calling this).
+// selected period (Health's own year/quarter selector above — decoupled from the
+// dashboard's month-level yearSelect/monthSelect, since Health no longer drills into
+// individual months). No-ops gracefully if the branch has no data (handled by
+// switchPage/switchBranch showing #healthEmptyState instead of calling this).
 function renderHealth() {
   if (!CTX || !CTX.hasData) return;
-  const periodVal = monthSelect.value;
-  if (!periodVal) return;
+  if (!healthYearSelect.value) return;
+  const y = Number(healthYearSelect.value.slice(2));
+  const periodVal = (y === currentBeYear() && healthQuarterSelect.value)
+    ? healthQuarterSelect.value
+    : healthYearSelect.value;
 
   const d = healthRawDataForBranch(CTX, periodVal);
   const score = d ? healthScoreFor(d) : null;
@@ -1974,13 +2078,14 @@ function switchPage(page) {
     }
     renderAnalysis();
   } else if (page === 'health') {
-    // Health is branch-scoped just like the dashboard, so it keeps the same branch/period
-    // controls visible (rather than hiding them the way the cross-branch "วิเคราะห์" page does).
+    // Health is branch-scoped like the dashboard, so it keeps the branch switcher visible —
+    // but it now has its own year/quarter period selector (inside #healthBody) instead of
+    // the dashboard's month-level yearSelect/monthSelect, so those hide here too.
     healthContentEl.classList.remove('hidden');
-    dashboardHeaderControls.classList.remove('hidden');
+    dashboardHeaderControls.classList.add('hidden');
     branchSwitcherMobile.classList.remove('hidden');
     refreshHeaderTitle(DATA.branches.find(b => b.key === branchSelect.value) || DATA.branches[0]);
-    if (CTX && CTX.hasData) renderHealth();
+    if (CTX && CTX.hasData) { populateHealthPeriodSelectors(); renderHealth(); }
   } else {
     dashboardHeaderControls.classList.remove('hidden');
     branchSwitcherMobile.classList.remove('hidden');
