@@ -83,10 +83,6 @@
 </style>
 </head>
 <body class="bg-gradient-to-br from-[var(--brand-100)] via-[var(--brand-50)] to-white min-h-screen text-slate-800">
-<!-- Temporary build marker for cache-verification purposes only — safe to ignore/remove later.
-     If this text is NOT visible bottom-right on a live device, the browser is showing an old
-     cached copy of this file, not what's actually deployed. -->
-<div style="position:fixed; bottom:4px; right:6px; z-index:9999; font-size:10px; color:#94a3b8; background:rgba(255,255,255,0.7); padding:2px 6px; border-radius:6px; pointer-events:none;">build 20260813-0914</div>
 
 <div class="flex">
 
@@ -140,9 +136,15 @@
         </button>
       </div>
 
-      <div class="min-w-0 max-w-full">
-        <p class="text-[9px] sm:text-[11px] font-bold text-[var(--brand-500)] tracking-[0.1em] sm:tracking-[0.15em] uppercase mb-0.5 sm:mb-1" id="headerEyebrow">ประสิทธิภาพในการทำกำไรของสาขา</p>
-        <h1 class="text-xl sm:text-3xl lg:text-4xl font-bold text-slate-800 leading-tight break-words" id="headerTitle">แดชบอร์ดการเงิน <span id="branchNameInTitle" class="text-[var(--brand-600)]">สาขาวัดโพธิ์</span></h1>
+      <!-- Title + profile avatar paired in one row (avatar always sits right next to the
+           title, instead of being its own separate flex item that used to end up stranded
+           alone on its own line once the header wrapped on mobile). -->
+      <div class="flex-1 min-w-0 max-w-full flex items-center justify-between gap-3">
+        <div class="min-w-0 max-w-full">
+          <p class="text-[9px] sm:text-[11px] font-bold text-[var(--brand-500)] tracking-[0.1em] sm:tracking-[0.15em] uppercase mb-0.5 sm:mb-1" id="headerEyebrow">ประสิทธิภาพในการทำกำไรของสาขา</p>
+          <h1 class="text-xl sm:text-3xl lg:text-4xl font-bold text-slate-800 leading-tight break-words" id="headerTitle">แดชบอร์ดการเงิน <span id="branchNameInTitle" class="text-[var(--brand-600)]">สาขาวัดโพธิ์</span></h1>
+        </div>
+        <div class="brand-avatar w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-[var(--brand-700)] via-[var(--brand-600)] to-[var(--brand-500)] flex items-center justify-center text-white font-bold text-xs sm:text-sm ring-2 ring-white/70 shrink-0 md:hidden">CN</div>
       </div>
 
       <!-- Branch switcher: on mobile the sidebar is hidden, so surface it here instead -->
@@ -167,7 +169,7 @@
           <i class="fa-solid fa-chevron-down text-[var(--brand-500)] text-[10px] sm:text-xs absolute right-2.5 sm:right-3.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
         </div>
       </div>
-      <div class="brand-avatar w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-[var(--brand-700)] via-[var(--brand-600)] to-[var(--brand-500)] flex items-center justify-center text-white font-bold text-xs sm:text-sm ring-2 ring-white/70">CN</div>
+      <div class="brand-avatar w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-[var(--brand-700)] via-[var(--brand-600)] to-[var(--brand-500)] hidden md:flex items-center justify-center text-white font-bold text-xs sm:text-sm ring-2 ring-white/70">CN</div>
     </header>
 
     <!-- Empty state: shown when the selected branch has no data yet -->
