@@ -4,10 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>แดชบอร์ด - ร้านกาแฟอเมซอน สาขาวัดโพธิ์</title>
+<!-- Preconnect: opens the DNS/TLS connection to each CDN origin before its script or stylesheet
+     tag below is reached, shaving handshake latency off the critical render path (most
+     noticeable on mobile networks). Pure network hint — no behavior or visual change. -->
+<link rel="preconnect" href="https://cdn.tailwindcss.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Weight 300 dropped: nothing in this file uses font-light, and every other weight actually
+     referenced (400 default body text, 500/600/700/800 via Tailwind's font-medium/semibold/
+     bold/extrabold) is kept, so this trims dead font-file weight with no visual change. -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   /* Brand theme variables: swapped per-branch by applyBranchTheme() in the script below.
      Defaults here match สาขาวัดโพธิ์ (blue) so the very first paint (before JS runs) is correct. */
@@ -412,7 +423,7 @@
       <!-- Profit trend across all months, per branch -->
       <div class="card rounded-2xl sm:rounded-3xl p-4 sm:p-6 pb-10">
         <h2 class="text-sm sm:text-lg font-bold text-slate-900 mb-1">แนวโน้มกำไร/ขาดทุนรายเดือน เทียบทุกสาขา</h2>
-        <p class="text-xs sm:text-sm text-slate-500 mb-3">แสดงประวัติทั้งหมดของแต่ละสาขา ไม่ขึ้นกับตัวกรองช่วงเวลาด้านบน</p>
+        <p class="text-xs sm:text-sm text-slate-500 mb-3">แสดงย้อนหลัง 12 เดือนล่าสุดของแต่ละสาขา ไม่ขึ้นกับตัวกรองช่วงเวลาด้านบน</p>
         <div class="relative w-full min-h-[14rem] sm:min-h-[20rem]">
           <canvas id="analysisTrendChart"></canvas>
         </div>
@@ -471,8 +482,7 @@
               <span id="healthBandLabel" class="text-xs sm:text-sm font-bold px-2.5 py-1 rounded-full">-</span>
               <span id="healthPeriodLabel" class="text-xs sm:text-sm text-slate-500">-</span>
             </div>
-            <p class="text-xs sm:text-sm text-slate-500 mb-3">ประเมินจาก 4 มิติ มิติละ 25 คะแนน: ความสามารถทำกำไร การเติบโต การควบคุมต้นทุน และเสถียรภาพ</p>
-            <div id="healthDimensionBars" class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5"></div>
+            <div id="healthDimensionBars" class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5 mt-1"></div>
           </div>
         </div>
 
@@ -480,7 +490,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-6">
           <div class="lg:col-span-2 card rounded-2xl sm:rounded-3xl p-4 sm:p-6 flex flex-col">
             <h2 class="text-sm sm:text-lg font-bold text-slate-900 mb-1">แนวโน้มคะแนนสุขภาพรายเดือน</h2>
-            <p class="text-xs sm:text-sm text-slate-500 mb-3">คะแนนคำนวณแยกทีละเดือน ตลอดประวัติของสาขานี้</p>
+            <p class="text-xs sm:text-sm text-slate-500 mb-3">คะแนนคำนวณแยกทีละเดือน ย้อนหลัง 12 เดือนล่าสุด</p>
             <div class="relative w-full flex-1 min-h-[12rem] sm:min-h-[16rem]">
               <canvas id="healthMonthlyChart"></canvas>
             </div>
@@ -497,7 +507,7 @@
         <!-- Month-by-month detail log for this branch -->
         <div class="card rounded-2xl sm:rounded-3xl p-4 sm:p-6 pb-10">
           <h2 class="text-sm sm:text-lg font-bold text-slate-900 mb-1">บันทึกสุขภาพรายเดือน</h2>
-          <p class="text-xs sm:text-sm text-slate-500 mb-4">ทุกเดือนในประวัติของสาขานี้</p>
+          <p class="text-xs sm:text-sm text-slate-500 mb-4" id="healthTableScopeLabel">ทุกเดือนในประวัติของสาขานี้</p>
           <div class="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
             <table class="w-full text-left border-collapse [font-variant-numeric:tabular-nums]">
               <thead>
@@ -1369,27 +1379,23 @@ function renderCashFlow() {
 }
 
 // Selecting a year (or "ทั้งหมดทุกปี") repopulates the month dropdown for that scope and
-// defaults to the whole-scope total.
-// Dispatches to whichever page is currently visible — render() for the dashboard's own P&L
-// view, renderHealth() for the branch health checkup — since both are driven by this same
-// shared year/month period control.
-function renderCurrentPeriodView(periodVal) {
-  render(periodVal);
-}
+// defaults to the whole-scope total, then re-renders the dashboard's P&L view for it. (Health
+// used to share this control too, but now has its own independent year/quarter selector —
+// see healthYearSelect/healthQuarterSelect below — so this only drives the dashboard page.)
 yearSelect.addEventListener('change', () => {
   if (!CTX || !CTX.hasData) return;
   if (yearSelect.value === 'ALL') {
     populateMonthSelect('ALL');
     monthSelect.value = 'ALL';
-    renderCurrentPeriodView('ALL');
+    render('ALL');
     return;
   }
   const year = Number(yearSelect.value.slice(2));
   populateMonthSelect(year);
   monthSelect.value = 'Y-' + year;
-  renderCurrentPeriodView(monthSelect.value);
+  render(monthSelect.value);
 });
-monthSelect.addEventListener('change', () => { if (CTX && CTX.hasData) renderCurrentPeriodView(monthSelect.value); });
+monthSelect.addEventListener('change', () => { if (CTX && CTX.hasData) render(monthSelect.value); });
 document.getElementById('rangeSelect').addEventListener('change', renderCashFlow);
 
 // Used by the Cash Flow chart's onClick: jump both dropdowns to the clicked month
@@ -1638,10 +1644,10 @@ function renderAnalysis() {
   renderAnalysisTrend();
 }
 
-// Full-history profit trend, one line per branch, independent of the period selector above —
-// this is the "at a glance, who's trending up or down" view.
+// Recent profit trend (last 12 months), one line per branch, independent of the period
+// selector above — this is the "at a glance, who's trending up or down lately" view.
 function renderAnalysisTrend() {
-  const allMonths = analysisAllMonths();
+  const allMonths = analysisAllMonths().slice(-12);
   if (analysisTrendChartInst) analysisTrendChartInst.destroy();
   const datasets = ANALYSIS_BRANCHES.map(b => {
     const ctx = ANALYSIS_CTXS[b.key];
@@ -1816,11 +1822,24 @@ function healthScoreFor(d) {
 }
 
 const HEALTH_DIMENSION_META = [
-  { key: 'profitScore', label: 'ความสามารถทำกำไร' },
-  { key: 'growthScore', label: 'การเติบโต' },
-  { key: 'costScore', label: 'ควบคุมต้นทุน' },
-  { key: 'stabilityScore', label: 'เสถียรภาพ' }
+  { key: 'profitScore', label: 'ความสามารถทำกำไร', desc: 'คำนวณจากอัตรากำไรสุทธิ (กำไร ÷ รายได้) ในช่วงเวลาที่เลือก ยิ่งอัตรากำไรสูง คะแนนยิ่งมาก เต็ม 25 คะแนน' },
+  { key: 'growthScore', label: 'การเติบโต', desc: 'คำนวณจากอัตราการเติบโตของรายได้เทียบกับช่วงก่อนหน้า (เดือน/ไตรมาส/ปีก่อน) ยิ่งเติบโตมาก คะแนนยิ่งสูง เต็ม 25 คะแนน' },
+  { key: 'costScore', label: 'ควบคุมต้นทุน', desc: 'คำนวณจากสัดส่วนต้นทุนวัตถุดิบ/สินค้าต่อรายได้ ยิ่งควบคุมต้นทุนให้ต่ำ คะแนนยิ่งสูง เต็ม 25 คะแนน' },
+  { key: 'stabilityScore', label: 'เสถียรภาพ', desc: 'คำนวณจากสัดส่วนจำนวนเดือนที่มีกำไรเป็นบวกในช่วงเวลาที่ประเมิน ยิ่งทำกำไรได้สม่ำเสมอ คะแนนยิ่งสูง เต็ม 25 คะแนน' }
 ];
+
+// Tap/click the (i) icon next to a dimension to toggle its explanation — delegated once
+// here (rather than re-bound every renderHealth() call) since #healthDimensionBars' innerHTML
+// gets replaced on every render. Works the same on mobile tap and desktop click/hover(title).
+document.addEventListener('click', (e) => {
+  const icon = e.target.closest('.health-dim-info');
+  if (!icon) return;
+  const idx = icon.getAttribute('data-dim-idx');
+  document.querySelectorAll('.health-dim-desc').forEach(p => {
+    if (p.getAttribute('data-dim-idx') === idx) p.classList.toggle('hidden');
+    else p.classList.add('hidden');
+  });
+});
 
 // Health's own period selector: a year dropdown, plus a quarter dropdown that only appears
 // (and only applies) when the selected year is the current year — past years show one
@@ -1907,16 +1926,20 @@ function renderHealth() {
   bandLabel.style.background = score.band.color + '1a';
   bandLabel.style.color = score.band.color;
 
-  barsEl.innerHTML = HEALTH_DIMENSION_META.map(m => {
+  barsEl.innerHTML = HEALTH_DIMENSION_META.map((m, i) => {
     const val = score[m.key];
     const pct = Math.round(val / 25 * 100);
     return '<div>' +
       '<div class="flex items-center justify-between text-xs text-slate-500 mb-1">' +
-        '<span>' + m.label + '</span><span class="font-semibold text-slate-700">' + val.toFixed(1) + '/25</span>' +
+        '<span class="inline-flex items-center gap-1">' + m.label +
+          '<i class="fa-solid fa-circle-info text-slate-300 cursor-pointer health-dim-info" data-dim-idx="' + i + '" title="' + m.desc + '"></i>' +
+        '</span>' +
+        '<span class="font-semibold text-slate-700">' + val.toFixed(1) + '/25</span>' +
       '</div>' +
       '<div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">' +
         '<div class="h-full rounded-full" style="width:' + pct + '%;background:' + score.band.color + '"></div>' +
       '</div>' +
+      '<p class="text-[11px] text-slate-400 mt-1 hidden health-dim-desc" data-dim-idx="' + i + '">' + m.desc + '</p>' +
     '</div>';
   }).join('');
 
@@ -1928,7 +1951,7 @@ function renderHealth() {
 // Score computed independently for every month in the branch's full history — this is what
 // answers "รายเดือน" (monthly trend), regardless of whatever period is selected up top.
 function renderHealthMonthlyChart() {
-  const months = CTX.months;
+  const months = CTX.months.slice(-12);
   const series = months.map(mk => {
     const d = healthRawDataForBranch(CTX, mk);
     return d ? healthScoreFor(d).total : null;
@@ -2000,7 +2023,13 @@ function renderHealthYearlyChart() {
 function renderHealthTable() {
   const tbody = document.getElementById('healthTableBody');
   tbody.innerHTML = '';
-  const months = [...CTX.months].reverse(); // most recent first
+  // Scoped to whichever year is selected up top (not the branch's whole history) — e.g.
+  // selecting ปี 2569 only lists that year's months, matching the score card above it.
+  const selectedYear = healthYearSelect.value ? Number(healthYearSelect.value.slice(2)) : null;
+  const yearMonths = selectedYear && CTX.yearAgg[selectedYear] ? CTX.yearAgg[selectedYear].months : CTX.months;
+  const months = [...yearMonths].reverse(); // most recent first
+  const labelEl = document.getElementById('healthTableScopeLabel');
+  if (labelEl) labelEl.textContent = selectedYear ? ('ทุกเดือนในปี ' + selectedYear) : 'ทุกเดือนในประวัติของสาขานี้';
   months.forEach(mk => {
     const d = healthRawDataForBranch(CTX, mk);
     if (!d) return;
