@@ -16,7 +16,11 @@
     --brand-700:#1d4ed8; --brand-800:#1e40af; --brand-900:#1e3a8a; --brand-rgb:59,130,246;
     --brand-grad-from:#3b82f6; --brand-grad-via:#6366f1; --brand-grad-to:#7c3aed;
   }
-  html { scroll-behavior: smooth; overflow-x: hidden; }
+  /* On iOS Safari, scrolling past the bottom of the page (rubber-band/bounce overscroll)
+     reveals whatever's behind <body> — normally plain white — which showed up as a white bar
+     covering the bottom of the screen. Giving <html> the same tint as the body's gradient
+     means that bounce area blends in instead of flashing white. */
+  html { scroll-behavior: smooth; overflow-x: hidden; background: var(--brand-50); }
   /* Safety net: on narrow phones, any single element that's a hair too wide (e.g. the 3-tab
      pill row) used to make the WHOLE page horizontally scrollable, which shifted every row
      below it and cut off content on the right. Clipping overflow at the root stops that from
