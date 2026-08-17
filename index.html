@@ -298,10 +298,12 @@
         <div class="card rounded-2xl sm:rounded-3xl p-4 sm:p-6">
           <h2 class="text-sm sm:text-lg font-bold text-slate-900 mb-1">โครงสร้างรายจ่าย</h2>
           <p id="expenseTotalLabel" class="text-xs sm:text-sm text-slate-700 mb-4">รวม -</p>
-          <div class="relative h-36 sm:h-44 w-full">
-            <canvas id="expensesBarChart"></canvas>
-          </div>
-          <div id="expenseLegend" class="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs sm:text-sm text-slate-800"></div>
+          <!-- Pareto bars: plain HTML/CSS rows (not a Chart.js canvas) so the Thai category
+               names are real, wrappable text — a canvas-drawn axis label can only ever be as
+               wide as whatever space the chart library reserves for it, and long Thai names
+               (e.g. "อุปกรณ์และวัสดุสิ้นเปลือง") kept getting clipped there. HTML text has no
+               such ceiling: it wraps instead of cutting off, on any screen size. -->
+          <div id="expenseParetoBars" class="space-y-3"></div>
         </div>
       </div>
 
@@ -417,15 +419,6 @@
             </div>
           </div>
           <div id="analysisDonutLegend" class="mt-4 space-y-1.5 text-xs sm:text-sm text-slate-800"></div>
-        </div>
-      </div>
-
-      <!-- Profit trend across all months, per branch -->
-      <div class="card rounded-2xl sm:rounded-3xl p-4 sm:p-6 pb-10">
-        <h2 class="text-sm sm:text-lg font-bold text-slate-900 mb-1">แนวโน้มกำไร/ขาดทุนรายเดือน เทียบทุกสาขา</h2>
-        <p class="text-xs sm:text-sm text-slate-500 mb-3">แสดงย้อนหลัง 12 เดือนล่าสุดของแต่ละสาขา ไม่ขึ้นกับตัวกรองช่วงเวลาด้านบน</p>
-        <div class="relative w-full min-h-[14rem] sm:min-h-[20rem]">
-          <canvas id="analysisTrendChart"></canvas>
         </div>
       </div>
 
@@ -934,7 +927,7 @@ function getPeriod(key) {
   };
 }
 
-let cashFlowChart, donutChart, barChart;
+let cashFlowChart, donutChart;
 
 // Decide what the bottom-row growth % should compare against, given the current view:
 // specific month -> previous month, whole year -> previous year, no previous period -> the
@@ -1057,7 +1050,6 @@ function renderDonutAndBar(p) {
     row.style.background = color + '14';
     row.innerHTML =
       '<span class="flex items-center gap-2 min-w-0">' +
-        '<span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:'+color+'"></span>' +
         '<span class="truncate">'+c+'</span>' +
       '</span>' +
       '<span class="font-semibold shrink-0" style="color:'+color+'">'+pct+'%</span>';
@@ -1065,43 +1057,44 @@ function renderDonutAndBar(p) {
   });
 
   document.getElementById('expenseTotalLabel').textContent = 'รวม ' + fmtNum(s.expense) + ' บาท';
-  if (barChart) barChart.destroy();
-  const sortedGroups = [...DATA.grp_order].sort((a,b)=>(p.exp_group[b]||0)-(p.exp_group[a]||0));
-  barChart = new Chart(document.getElementById('expensesBarChart').getContext('2d'), {
-    type: 'bar',
-    data: { labels: ['หมวดหมู่รายจ่าย'], datasets: sortedGroups.map(g => ({
-      label:g, data:[p.exp_group[g]||0], backgroundColor: grpColors[g]||'#94a3b8',
-      borderRadius: 5, borderSkipped: false, borderWidth: 2, borderColor: 'rgba(255,255,255,0.85)'
-    })) },
-    options: { responsive:true, maintainAspectRatio:false, indexAxis:'y',
-      barThickness: 60,
-      plugins: { legend: { display:false },
-        tooltip: { backgroundColor:'#1e293b', padding:12, cornerRadius:10, boxPadding:6,
-          callbacks: { label:(ctx)=>' '+ctx.dataset.label+': ฿'+ctx.parsed.x.toLocaleString() } } },
-      scales: {
-        x:{ stacked:true, grid:{display:false, drawBorder:false}, border:{display:false},
-          ticks:{callback:(v)=>v/1000+'k', color:'#94a3b8', font:{size:11}} },
-        y:{ stacked:true, display:false, grid:{display:false, drawBorder:false} }
-      }
-    }
-  });
-
-  const expLegendWrap = document.getElementById('expenseLegend'); expLegendWrap.innerHTML = '';
+  // Pareto layout: one row per expense category, sorted largest first, bar length scaled
+  // relative to the biggest category (that one always reads as "full width"), so relative
+  // size reads at a glance instead of being buried as segments inside one stacked bar.
+  // Categories with nothing spent this period are dropped entirely.
+  // Built as plain HTML rows rather than a Chart.js canvas axis: a canvas-drawn tick label
+  // can only ever be as wide as whatever column space the chart library reserves for it, and
+  // long Thai category names (e.g. "อุปกรณ์และวัสดุสิ้นเปลือง") kept getting clipped there
+  // however that reservation was computed. Real HTML text has no such ceiling — it just wraps
+  // instead of cutting off, on any screen size, with zero font-measurement guesswork.
+  const sortedGroups = [...DATA.grp_order]
+    .filter(g => (p.exp_group[g] || 0) > 0)
+    .sort((a, b) => (p.exp_group[b] || 0) - (p.exp_group[a] || 0));
+  const maxAmt = sortedGroups.length ? (p.exp_group[sortedGroups[0]] || 0) : 0;
+  const paretoWrap = document.getElementById('expenseParetoBars');
+  paretoWrap.innerHTML = '';
   sortedGroups.forEach(g => {
-    const amt = p.exp_group[g] || 0; if (amt <= 0) return;
+    const amt = p.exp_group[g] || 0;
     const pct = s.expense ? Math.round(amt / s.expense * 100) : 0;
+    const barPct = maxAmt ? Math.max(2, Math.round(amt / maxAmt * 100)) : 0;
     const color = grpColors[g] || '#94a3b8';
     const row = document.createElement('div');
-    row.className = 'flex items-center justify-between gap-2 rounded-xl px-2.5 py-1.5';
-    row.style.background = color + '14';
     row.innerHTML =
-      '<span class="flex items-center gap-2 min-w-0">' +
-        '<span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:'+color+'"></span>' +
-        '<span class="truncate">'+g+'</span>' +
-      '</span>' +
-      '<span class="font-semibold shrink-0" style="color:'+color+'">'+pct+'%</span>';
-    expLegendWrap.appendChild(row);
+      '<div class="flex items-center justify-between gap-3 text-xs sm:text-sm mb-1">' +
+        '<span class="flex items-center gap-2 min-w-0">' +
+          '<span class="text-slate-700 font-medium">' + g + '</span>' +
+        '</span>' +
+        '<span class="shrink-0 font-semibold text-slate-800 [font-variant-numeric:tabular-nums] whitespace-nowrap">' +
+          fmtNum(amt) + ' <span class="font-normal text-slate-400">(' + pct + '%)</span>' +
+        '</span>' +
+      '</div>' +
+      '<div class="w-full h-3 sm:h-3.5 bg-slate-100 rounded-full overflow-hidden">' +
+        '<div class="h-full rounded-full" style="width:' + barPct + '%;background:' + color + '"></div>' +
+      '</div>';
+    paretoWrap.appendChild(row);
   });
+  if (!sortedGroups.length) {
+    paretoWrap.innerHTML = '<p class="text-center text-slate-400 text-sm py-6">ไม่มีข้อมูลรายจ่ายสำหรับช่วงเวลานี้</p>';
+  }
 }
 
 // For the "อื่นๆ" (misc) expense line, group the many one-off line items into a handful of
@@ -1429,7 +1422,7 @@ ANALYSIS_BRANCHES.forEach(b => { ANALYSIS_CTXS[b.key] = buildBranchContext(b); }
 
 const analysisYearSelect = document.getElementById('analysisYearSelect');
 const analysisMonthSelect = document.getElementById('analysisMonthSelect');
-let analysisBarChartInst, analysisDonutChartInst, analysisTrendChartInst;
+let analysisBarChartInst, analysisDonutChartInst;
 let analysisInitialized = false;
 let currentPage = 'dashboard';
 
@@ -1587,7 +1580,7 @@ function renderAnalysis() {
     const marginCls = r.margin === null ? 'text-slate-400' : (r.margin >= 0 ? 'text-emerald-600' : 'text-rose-600');
     const profitCls = r.profit >= 0 ? 'text-emerald-600' : 'text-rose-600';
     tr.innerHTML =
-      '<td class="py-2.5 sm:py-3 pr-2 sm:pr-4 font-medium text-slate-800"><span class="inline-flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:' + r.theme['500'] + '"></span>' + (i + 1) + '. ' + r.name + '</span></td>' +
+      '<td class="py-2.5 sm:py-3 pr-2 sm:pr-4 font-medium text-slate-800">' + (i + 1) + '. ' + r.name + '</td>' +
       '<td class="py-2.5 sm:py-3 pr-2 sm:pr-4 text-right whitespace-nowrap">' + fmtNum(r.revenue) + '</td>' +
       '<td class="py-2.5 sm:py-3 pr-2 sm:pr-4 text-right whitespace-nowrap">' + fmtNum(r.expense) + '</td>' +
       '<td class="py-2.5 sm:py-3 pr-2 sm:pr-4 text-right whitespace-nowrap font-semibold ' + profitCls + '">' + fmtNum(r.profit) + '</td>' +
@@ -1637,46 +1630,8 @@ function renderAnalysis() {
     const pct = totalRevenue ? (r.revenue / totalRevenue * 100) : 0;
     const row = document.createElement('div');
     row.className = 'flex items-center justify-between gap-2';
-    row.innerHTML = '<span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:' + r.theme['500'] + '"></span>' + r.name + '</span><span class="font-semibold">' + pct.toFixed(1) + '%</span>';
+    row.innerHTML = '<span>' + r.name + '</span><span class="font-semibold">' + pct.toFixed(1) + '%</span>';
     legend.appendChild(row);
-  });
-
-  renderAnalysisTrend();
-}
-
-// Recent profit trend (last 12 months), one line per branch, independent of the period
-// selector above — this is the "at a glance, who's trending up or down lately" view.
-function renderAnalysisTrend() {
-  const allMonths = analysisAllMonths().slice(-12);
-  if (analysisTrendChartInst) analysisTrendChartInst.destroy();
-  const datasets = ANALYSIS_BRANCHES.map(b => {
-    const ctx = ANALYSIS_CTXS[b.key];
-    return {
-      label: b.name,
-      data: allMonths.map(mk => ctx.summary[mk] ? ctx.summary[mk].profit : null),
-      borderColor: b.theme['500'], backgroundColor: b.theme['500'],
-      spanGaps: true, tension: 0.3, pointRadius: 2, borderWidth: 2
-    };
-  });
-  analysisTrendChartInst = new Chart(document.getElementById('analysisTrendChart').getContext('2d'), {
-    type: 'line',
-    data: { labels: allMonths.map(mk => analysisMonthLabelShort(mk)), datasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8, font: { size: 11 } } },
-        tooltip: {
-          callbacks: {
-            title: (items) => items[0] ? analysisMonthLabel(allMonths[items[0].dataIndex]) : '',
-            label: (item) => item.dataset.label + ': ' + fmtNum(item.parsed.y) + ' บาท'
-          }
-        }
-      },
-      scales: {
-        y: { ticks: { callback: v => fmtAxisShort(v), font: { size: 10 } } },
-        x: { ticks: { font: { size: 10 }, maxRotation: 60, minRotation: 0, autoSkip: true } }
-      }
-    }
   });
 }
 
@@ -2141,6 +2096,23 @@ updateNavActiveState();
 // Boot the dashboard on the first branch (สาขาวัดโพธิ์) — switchBranch handles populating
 // the selectors and doing the initial render (or showing the empty state).
 switchBranch(DATA.branches[0].key);
+
+// Charts measure tick/label text width using whatever font is *actually* active in the
+// canvas context at the moment they're built. On first paint the custom Noto Sans Thai/Inter
+// webfonts (loaded via Google Fonts) usually haven't finished downloading yet, so this very
+// first render can measure Thai text with the browser's fallback font — which has different
+// (often narrower) metrics — and reserve too little space for it. Once the real webfonts are
+// confirmed loaded, quietly re-render whatever's currently on screen so every chart re-measures
+// and re-lays-out against accurate metrics. No-op (safe) in the rare browser without the Font
+// Loading API.
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(() => {
+    if (!CTX || !CTX.hasData) return;
+    if (currentPage === 'health') { renderHealth(); }
+    else if (currentPage === 'analysis') { renderAnalysis(); }
+    else { render(monthSelect.value); renderCashFlow(); }
+  });
+}
 </script>
 </body>
 </html>
